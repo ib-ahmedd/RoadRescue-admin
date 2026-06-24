@@ -1,0 +1,731 @@
+.layout {
+  display: flex;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #050813 0%, #0c1022 100%);
+}
+
+.sidebar {
+  width: 280px;
+  background: rgba(10, 15, 30, 0.7);
+  backdrop-filter: blur(20px);
+  border-right: 1px solid rgba(255, 255, 255, 0.05);
+  padding: 2rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  height: 100vh;
+  z-index: 100;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 2.5rem;
+}
+
+.logoIcon {
+  font-size: 1.75rem;
+  animation: pulse 2s infinite ease-in-out;
+}
+
+.brandName {
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  flex: 1;
+}
+
+.navItem {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.8rem 1rem;
+  border-radius: var(--r-sm);
+  color: var(--text-secondary);
+  font-weight: 500;
+  font-size: 0.925rem;
+  transition: all 0.2s ease;
+  width: 100%;
+  text-align: left;
+}
+
+.navItem:hover {
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.navItemActive {
+  color: var(--text-primary);
+  background: rgba(245, 158, 11, 0.1);
+  border: 1px solid rgba(245, 158, 11, 0.15);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+.sidebarFooter {
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  padding-top: 1.5rem;
+}
+
+.statusIndicator {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+.pulseDot {
+  width: 8px;
+  height: 8px;
+  background: var(--success);
+  border-radius: 50%;
+  box-shadow: 0 0 10px var(--success);
+  animation: pulse 1.5s infinite alternate;
+}
+
+.content {
+  flex: 1;
+  margin-left: 280px;
+  padding: 2.5rem;
+  max-width: 1600px;
+}
+
+/* ── Headings ───────────────────────────────────────────── */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2.5rem;
+}
+
+.pageTitle {
+  font-size: 1.75rem;
+  font-weight: 700;
+}
+
+.dateDisplay {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  background: rgba(255,255,255,0.03);
+  padding: 0.4rem 0.8rem;
+  border-radius: 9999px;
+  border: 1px solid rgba(255,255,255,0.05);
+}
+
+/* ── Metrics ────────────────────────────────────────────── */
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.5rem;
+  margin-bottom: 2.5rem;
+}
+
+.statCard {
+  background: rgba(15, 22, 42, 0.4);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  border-radius: var(--r-md);
+  padding: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  transition: all 0.3s ease;
+}
+
+.statCard:hover {
+  transform: translateY(-2px);
+  border-color: rgba(255, 255, 255, 0.08);
+  box-shadow: var(--shadow-md);
+}
+
+.statIcon {
+  font-size: 2rem;
+  background: rgba(255, 255, 255, 0.03);
+  width: 60px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--r-sm);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.statLabel {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.25rem;
+}
+
+.statValue {
+  font-size: 1.75rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+/* ── Overview Panel ─────────────────────────────────────── */
+.overviewGrid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 1.5rem;
+  margin-bottom: 2.5rem;
+}
+
+.card {
+  background: rgba(15, 22, 42, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  border-radius: var(--r-md);
+  padding: 1.75rem;
+}
+
+.cardTitle {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.activityList {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.activityItem {
+  display: flex;
+  gap: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid rgba(255,255,255,0.03);
+}
+
+.activityItem:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.activityIcon {
+  font-size: 1.25rem;
+  background: rgba(255, 255, 255, 0.03);
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.activityMeta {
+  flex: 1;
+}
+
+.activityText {
+  font-size: 0.875rem;
+  color: var(--text-primary);
+}
+
+.activityTime {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  margin-top: 0.2rem;
+}
+
+/* progress charts */
+.progressList {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.progressItem {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.progressLabelRow {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.85rem;
+}
+
+.progressBarBg {
+  height: 6px;
+  background: rgba(255,255,255,0.03);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.progressBarFill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.8s ease;
+}
+
+/* ── Split Layout for details panels ─────────────────────── */
+.splitLayout {
+  display: grid;
+  grid-template-columns: 380px 1fr;
+  gap: 1.5rem;
+  height: calc(100vh - 160px);
+}
+
+.listPanel {
+  background: rgba(15, 22, 42, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  border-radius: var(--r-md);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.panelHeader {
+  padding: 1.25rem;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+
+.searchBox {
+  margin-top: 0.75rem;
+}
+
+.filterTabs {
+  display: flex;
+  gap: 0.25rem;
+  margin-top: 0.75rem;
+  background: rgba(0,0,0,0.15);
+  padding: 0.2rem;
+  border-radius: var(--r-sm);
+}
+
+.filterTab {
+  flex: 1;
+  text-align: center;
+  font-size: 0.75rem;
+  padding: 0.4rem;
+  border-radius: 4px;
+  color: var(--text-secondary);
+  transition: all 0.2s ease;
+}
+
+.filterTabActive {
+  background: var(--bg-600);
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+.listItems {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.requestCard {
+  background: rgba(255,255,255,0.01);
+  border: 1px solid rgba(255,255,255,0.03);
+  border-radius: var(--r-sm);
+  padding: 1rem;
+  text-align: left;
+  transition: all 0.2s ease;
+}
+
+.requestCard:hover {
+  background: rgba(255,255,255,0.03);
+  border-color: rgba(255,255,255,0.06);
+}
+
+.requestCardActive {
+  background: rgba(245, 158, 11, 0.04) !important;
+  border-color: rgba(245, 158, 11, 0.25) !important;
+}
+
+.cardHeader {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.4rem;
+}
+
+.clientName {
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.reqId {
+  font-family: monospace;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+
+.cardMeta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  margin-bottom: 0.5rem;
+}
+
+.locationSnippet {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-bottom: 0.6rem;
+}
+
+.detailsPanel {
+  background: rgba(15, 22, 42, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  border-radius: var(--r-md);
+  overflow-y: auto;
+  padding: 2rem;
+}
+
+.emptyDetails {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--text-secondary);
+  text-align: center;
+}
+
+.emptyIcon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  opacity: 0.6;
+}
+
+.detailHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  padding-bottom: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.detailTitle {
+  font-size: 1.4rem;
+  font-weight: 700;
+}
+
+.detailId {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  font-family: monospace;
+}
+
+.detailActions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.contactBar {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  border-radius: var(--r-sm);
+  padding: 0.75rem 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.contactText {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+.contactCheckboxWrap {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.sectionTitle {
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-secondary);
+  margin-top: 1.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.infoGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+}
+
+.infoBlock {
+  background: rgba(0,0,0,0.15);
+  border: 1px solid rgba(255,255,255,0.02);
+  border-radius: var(--r-sm);
+  padding: 1rem;
+}
+
+.infoLabel {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  margin-bottom: 0.25rem;
+}
+
+.infoValue {
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+.problemDesc {
+  background: rgba(239, 68, 68, 0.02);
+  border: 1px solid rgba(239, 68, 68, 0.08);
+  border-radius: var(--r-sm);
+  padding: 1.25rem;
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+/* Dispatch Tech List */
+.dispatchSection {
+  background: rgba(255, 255, 255, 0.01);
+  border: 1px solid rgba(255,255,255,0.03);
+  border-radius: var(--r-sm);
+  padding: 1.25rem;
+}
+
+.providerRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.8rem;
+  border: 1px solid rgba(255,255,255,0.03);
+  border-radius: var(--r-sm);
+  margin-bottom: 0.6rem;
+  background: rgba(0,0,0,0.15);
+}
+
+.providerRow:last-child {
+  margin-bottom: 0;
+}
+
+.providerProfile {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.providerAvatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--amber);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+.providerInfo {
+  display: flex;
+  flex-direction: column;
+}
+
+.providerName {
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.providerDetails {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+
+.providerRating {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+
+.providerBadge {
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  padding: 0.15rem 0.4rem;
+  border-radius: 4px;
+}
+
+.statusAvailable { background: rgba(34,197,94,0.1); color: var(--success); }
+.statusDispatched { background: rgba(245,158,11,0.1); color: var(--amber); }
+
+.dispatchBtn {
+  font-size: 0.75rem;
+  font-weight: 600;
+  background: var(--amber);
+  color: #060913;
+  padding: 0.35rem 0.75rem;
+  border-radius: var(--r-sm);
+  transition: all 0.2s ease;
+}
+
+.dispatchBtn:hover:not(:disabled) {
+  opacity: 0.9;
+}
+
+/* progress controls */
+.statusSliderCard {
+  background: rgba(0,0,0,0.25);
+  border: 1px solid rgba(255,255,255,0.03);
+  border-radius: var(--r-sm);
+  padding: 1.25rem;
+}
+
+.statusStepContainer {
+  display: flex;
+  gap: 0.4rem;
+  margin-top: 0.75rem;
+}
+
+.statusStepBtn {
+  flex: 1;
+  padding: 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: var(--r-sm);
+  border: 1px solid rgba(255,255,255,0.05);
+  color: var(--text-secondary);
+  text-align: center;
+  transition: all 0.2s ease;
+}
+
+.statusStepBtnActive {
+  background: var(--amber);
+  color: #060913;
+  border-color: var(--amber);
+  box-shadow: 0 0 10px var(--amber-glow);
+}
+
+.statusStepBtnCompleted {
+  background: rgba(34,197,94,0.06);
+  color: var(--success);
+  border-color: rgba(34,197,94,0.2);
+}
+
+/* ── Technicians Tab Panel ──────────────────────────────── */
+.techLayout {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 1.5rem;
+}
+
+.techTable {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.techTable th {
+  padding: 1rem;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-secondary);
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+.techTable td {
+  padding: 1.25rem 1rem;
+  border-bottom: 1px solid rgba(255,255,255,0.03);
+  font-size: 0.9rem;
+}
+
+.techTable tr:hover td {
+  background: rgba(255,255,255,0.01);
+}
+
+.techAddForm {
+  background: rgba(15, 22, 42, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  border-radius: var(--r-md);
+  padding: 1.5rem;
+}
+
+/* ── Contact inquiries layout ────────────────────────────── */
+.inquiryList {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.inquiryItem {
+  background: rgba(0,0,0,0.15);
+  border: 1px solid rgba(255,255,255,0.03);
+  border-radius: var(--r-sm);
+  padding: 1.5rem;
+  transition: border-color 0.2s ease;
+}
+
+.inquiryItem:hover {
+  border-color: rgba(255,255,255,0.06);
+}
+
+.inquiryHeader {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+}
+
+.inquiryTitle {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.inquiryEmail {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+.inquiryTime {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.inquiryBody {
+  font-size: 0.875rem;
+  line-height: 1.6;
+  color: var(--text-secondary);
+  white-space: pre-wrap;
+  background: rgba(0,0,0,0.15);
+  padding: 1rem;
+  border-radius: var(--r-sm);
+}
+
+/* ── Animations ─────────────────────────────────────────── */
+@keyframes pulse {
+  0% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.05); opacity: 0.8; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
