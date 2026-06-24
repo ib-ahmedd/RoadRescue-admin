@@ -19,6 +19,19 @@ interface Provider {
   avatar: string;
 }
 
+interface Application {
+  id: string;
+  name: string;
+  phone: string;
+  vehicle: string;
+  plate: string;
+  speciality: string;
+  avatar: string;
+  licenseId: string;
+  status: "pending" | "approved" | "rejected";
+  createdAt: string;
+}
+
 interface RequestData {
   id: string;
   name: string;
@@ -48,6 +61,17 @@ interface ContactSubmission {
   createdAt: string;
 }
 
+interface Dispute {
+  id: string;
+  requestId: string;
+  customerName: string;
+  customerPhone: string;
+  reason: string;
+  description: string;
+  status: "open" | "reviewing" | "resolved";
+  createdAt: string;
+}
+
 const SERVICE_DETAILS: Record<string, string> = {
   towing: "🚛 Towing",
   battery: "🔋 Battery Jump",
@@ -61,12 +85,14 @@ const SERVICE_DETAILS: Record<string, string> = {
 
 export default function AdminDashboard() {
   // Navigation tab state
-  const [activeTab, setActiveTab] = useState<"overview" | "requests" | "technicians" | "contacts">("overview");
+  const [activeTab, setActiveTab] = useState<"overview" | "requests" | "technicians" | "contacts" | "disputes" | "applications">("overview");
 
   // App data state
   const [requests, setRequests] = useState<RequestData[]>([]);
   const [providers, setProviders] = useState<Provider[]>([]);
   const [contacts, setContacts] = useState<ContactSubmission[]>([]);
+  const [disputes, setDisputes] = useState<Dispute[]>([]);
+  const [applications, setApplications] = useState<Application[]>([]);
   const [selectedRequestId, setSelectedRequestId] = useState<string | null>(null);
   
   // Loading & status states
@@ -114,6 +140,20 @@ export default function AdminDashboard() {
       if (contactRes.ok) {
         const conts = await contactRes.json();
         setContacts(conts);
+      }
+
+      // 4. Fetch Disputes
+      const disputeRes = await fetch(`${API_BASE_URL}/api/disputes`);
+      if (disputeRes.ok) {
+        const disps = await disputeRes.json();
+        setDisputes(disps);
+      }
+
+      // 5. Fetch Applications
+      const appRes = await fetch(`${API_BASE_URL}/api/applications`);
+      if (appRes.ok) {
+        const apps = await appRes.json();
+        setApplications(apps);
       }
     } catch (err) {
       console.error("API Fetch Error:", err);
@@ -166,6 +206,40 @@ export default function AdminDashboard() {
 
   const handleStatusChange = (request: RequestData, newStatus: RequestData["status"]) => {
     handleUpdateRequest(request.id, { status: newStatus });
+  };
+
+  const handleDisputeStatusChange = async (id: string, status: Dispute["status"]) => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/disputes`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, status }),
+      });
+      if (res.ok) {
+        const updated = await res.json();
+        setDisputes((prev) => prev.map((d) => (d.id === id ? updated : d)));
+      }
+    } catch (err) {
+      console.error("Failed to update dispute status:", err);
+    }
+  };
+
+  const handleApplicationStatus = async (id: string, status: "approved" | "rejected") => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/applications`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, status }),
+      });
+      if (res.ok) {
+        const updated = await res.json();
+        setApplications((prev) => prev.map((a) => (a.id === id ? updated : a)));
+        // Refresh providers list in dashboard real-time
+        fetchData(true);
+      }
+    } catch (err) {
+      console.error("Failed to update application status:", err);
+    }
   };
 
   // ── Provider Add Handler ──────────────────────────────────────────────────
@@ -316,6 +390,28 @@ export default function AdminDashboard() {
               </span>
             )}
           </button>
+          <button
+            className={`${styles.navItem} ${activeTab === "disputes" ? styles.navItemActive : ""}`}
+            onClick={() => setActiveTab("disputes")}
+          >
+            ⚠️ Disputes
+            {disputes.filter(d => d.status === "open").length > 0 && (
+              <span className="badge badge-danger" style={{ marginLeft: "auto", fontSize: "0.65rem", padding: "0.1rem 0.4rem" }}>
+                {disputes.filter(d => d.status === "open").length}
+              </span>
+            )}
+          </button>
+          <button
+            className={`${styles.navItem} ${activeTab === "applications" ? styles.navItemActive : ""}`}
+            onClick={() => setActiveTab("applications")}
+          >
+            📝 Tech Applications
+            {applications.filter(a => a.status === "pending").length > 0 && (
+              <span className="badge badge-amber" style={{ marginLeft: "auto", fontSize: "0.65rem", padding: "0.1rem 0.4rem" }}>
+                {applications.filter(a => a.status === "pending").length}
+              </span>
+            )}
+          </button>
         </nav>
 
         <div className={styles.sidebarFooter}>
@@ -337,6 +433,8 @@ export default function AdminDashboard() {
               {activeTab === "requests" && "Roadside Assistance Dispatch"}
               {activeTab === "technicians" && "Technician Directory & Registry"}
               {activeTab === "contacts" && "Customer Support Inquiries"}
+              {activeTab === "disputes" && "Dispute Management"}
+              {activeTab === "applications" && "Technician Applications Review"}
             </h2>
           </div>
           <div className={styles.dateDisplay}>
@@ -612,42 +710,88 @@ export default function AdminDashboard() {
                         ) : (
                           <div>
                             <p style={{ fontSize: "0.8rem", color: "var(--text-secondary)", marginBottom: "0.75rem" }}>
-                              Assign a technician matching speciality (<strong>{activeRequest.service}</strong>):
+                              Showing technicians qualified for <strong>{SERVICE_DETAILS[activeRequest.service] ?? activeRequest.service}</strong>:
                             </p>
-                            {providers.filter(p => p.status !== "Offline").length === 0 ? (
-                              <p style={{ fontSize: "0.8rem", color: "var(--text-secondary)", fontStyle: "italic" }}>
-                                No technicians currently available. Register a new operator in the Technicians panel.
-                              </p>
-                            ) : (
-                              providers
-                                .filter(p => p.status !== "Offline")
-                                .map((p) => {
-                                  const isMatch = p.speciality === activeRequest.service;
-                                  return (
-                                    <div key={p.id} className={styles.providerRow} style={{ border: isMatch ? "1px solid rgba(245,158,11,0.2)" : "1px solid var(--border)" }}>
-                                      <div className={styles.providerProfile}>
-                                        <div className={styles.providerAvatar}>{p.avatar}</div>
-                                        <div className={styles.providerInfo}>
-                                          <span className={styles.providerName}>
-                                            {p.name} {isMatch && <span style={{ color: "var(--amber)", fontSize: "0.7rem" }}>(Match)</span>}
-                                          </span>
-                                          <span className={styles.providerDetails}>
-                                            ★ {p.rating} | {p.vehicle}
-                                          </span>
+                            {(() => {
+                              const matchedTechs = providers.filter(
+                                p => p.status !== "Offline" && p.speciality === activeRequest.service
+                              );
+                              const otherTechs = providers.filter(
+                                p => p.status !== "Offline" && p.speciality !== activeRequest.service
+                              );
+
+                              if (matchedTechs.length === 0 && otherTechs.length === 0) {
+                                return (
+                                  <p style={{ fontSize: "0.8rem", color: "var(--text-secondary)", fontStyle: "italic" }}>
+                                    No technicians currently available. Register a new operator in the Technicians panel.
+                                  </p>
+                                );
+                              }
+
+                              return (
+                                <>
+                                  {matchedTechs.length > 0 ? (
+                                    matchedTechs.map((p) => (
+                                      <div key={p.id} className={styles.providerRow} style={{ border: "1px solid rgba(245,158,11,0.35)", background: "rgba(245,158,11,0.04)" }}>
+                                        <div className={styles.providerProfile}>
+                                          <div className={styles.providerAvatar}>{p.avatar}</div>
+                                          <div className={styles.providerInfo}>
+                                            <span className={styles.providerName}>
+                                              {p.name}{" "}
+                                              <span style={{ color: "var(--amber)", fontSize: "0.68rem", fontWeight: 600, background: "rgba(245,158,11,0.12)", padding: "1px 5px", borderRadius: "4px" }}>✓ Specialist</span>
+                                            </span>
+                                            <span className={styles.providerDetails}>
+                                              ★ {p.rating} · {p.reviews} reviews · {p.vehicle}
+                                            </span>
+                                          </div>
                                         </div>
+                                        <button
+                                          className={styles.dispatchBtn}
+                                          disabled={p.status !== "Available"}
+                                          style={{ opacity: p.status === "Available" ? 1 : 0.5 }}
+                                          onClick={() => handleDispatch(activeRequest, p)}
+                                        >
+                                          {p.status === "Available" ? "Dispatch" : p.status}
+                                        </button>
                                       </div>
-                                      <button
-                                        className={styles.dispatchBtn}
-                                        disabled={p.status !== "Available"}
-                                        style={{ opacity: p.status === "Available" ? 1 : 0.5 }}
-                                        onClick={() => handleDispatch(activeRequest, p)}
-                                      >
-                                        {p.status === "Available" ? "Dispatch" : "Unavailable"}
-                                      </button>
-                                    </div>
-                                  );
-                                })
-                            )}
+                                    ))
+                                  ) : (
+                                    <p style={{ fontSize: "0.78rem", color: "var(--text-secondary)", fontStyle: "italic", marginBottom: "0.5rem" }}>
+                                      ⚠️ No specialist technicians available for this service type.
+                                    </p>
+                                  )}
+
+                                  {otherTechs.length > 0 && (
+                                    <>
+                                      <p style={{ fontSize: "0.72rem", color: "var(--text-secondary)", marginTop: "0.85rem", marginBottom: "0.4rem", borderTop: "1px solid var(--border)", paddingTop: "0.65rem" }}>
+                                        Other available technicians (different speciality):
+                                      </p>
+                                      {otherTechs.map((p) => (
+                                        <div key={p.id} className={styles.providerRow} style={{ opacity: 0.75 }}>
+                                          <div className={styles.providerProfile}>
+                                            <div className={styles.providerAvatar}>{p.avatar}</div>
+                                            <div className={styles.providerInfo}>
+                                              <span className={styles.providerName}>{p.name}</span>
+                                              <span className={styles.providerDetails}>
+                                                ★ {p.rating} · {SERVICE_DETAILS[p.speciality] ?? p.speciality} · {p.vehicle}
+                                              </span>
+                                            </div>
+                                          </div>
+                                          <button
+                                            className={styles.dispatchBtn}
+                                            disabled={p.status !== "Available"}
+                                            style={{ opacity: p.status === "Available" ? 0.85 : 0.4 }}
+                                            onClick={() => handleDispatch(activeRequest, p)}
+                                          >
+                                            {p.status === "Available" ? "Dispatch" : p.status}
+                                          </button>
+                                        </div>
+                                      ))}
+                                    </>
+                                  )}
+                                </>
+                              );
+                            })()}
                           </div>
                         )}
                       </div>
@@ -866,6 +1010,203 @@ export default function AdminDashboard() {
                         </div>
                       </div>
                       <p className={styles.inquiryBody}>{c.message}</p>
+                    </div>
+                  ))
+                )}
+              </div>
+            )}
+
+            {/* ━━━━━━━━━━ DISPUTES TAB ━━━━━━━━━━ */}
+            {activeTab === "disputes" && (
+              <div className={styles.inquiryList}>
+                {/* Summary chips */}
+                <div style={{ display: "flex", gap: "0.75rem", marginBottom: "1.5rem", flexWrap: "wrap" }}>
+                  {(["open", "reviewing", "resolved"] as const).map((s) => {
+                    const count = disputes.filter(d => d.status === s).length;
+                    const color = s === "open" ? "var(--danger)" : s === "reviewing" ? "var(--amber)" : "var(--success)";
+                    return (
+                      <div key={s} style={{
+                        display: "flex", alignItems: "center", gap: "0.5rem",
+                        background: "var(--bg-800)", border: "1px solid var(--border)",
+                        borderRadius: "var(--r-sm)", padding: "0.5rem 1rem",
+                        fontSize: "0.82rem"
+                      }}>
+                        <span style={{ width: "8px", height: "8px", borderRadius: "50%", background: color, display: "inline-block" }} />
+                        <span style={{ textTransform: "capitalize", fontWeight: 600 }}>{s}</span>
+                        <span style={{ color: "var(--text-secondary)" }}>({count})</span>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {disputes.length === 0 ? (
+                  <div className={styles.card} style={{ textAlign: "center", padding: "4rem" }}>
+                    <span style={{ fontSize: "2rem" }}>✅</span>
+                    <h4 style={{ marginTop: "1rem", color: "var(--text-secondary)" }}>No disputes filed — all clear!</h4>
+                  </div>
+                ) : (
+                  disputes.map((d) => (
+                    <div key={d.id} className={styles.inquiryItem} style={{
+                      borderLeft: d.status === "open" ? "3px solid var(--danger)" :
+                                  d.status === "reviewing" ? "3px solid var(--amber)" :
+                                  "3px solid var(--success)"
+                    }}>
+                      <div className={styles.inquiryHeader}>
+                        <div>
+                          <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.4rem", flexWrap: "wrap" }}>
+                            <span className={`badge ${
+                              d.status === "open" ? "badge-danger" :
+                              d.status === "reviewing" ? "badge-amber" : "badge-success"
+                            }`} style={{ fontSize: "0.6rem" }}>
+                              {d.status.toUpperCase()}
+                            </span>
+                            <span style={{ fontFamily: "monospace", fontSize: "0.72rem", color: "var(--text-muted)" }}>{d.id}</span>
+                            <span style={{ fontFamily: "monospace", fontSize: "0.72rem", color: "var(--amber)" }}>→ {d.requestId}</span>
+                          </div>
+                          <h4 className={styles.inquiryTitle}>{d.customerName}</h4>
+                          <a href={`tel:${d.customerPhone}`} className={styles.inquiryEmail}>{d.customerPhone}</a>
+                        </div>
+                        <div style={{ textAlign: "right", flexShrink: 0 }}>
+                          <div className={styles.inquiryTime}>{new Date(d.createdAt).toLocaleString()}</div>
+                          {/* Status controls */}
+                          {d.status !== "resolved" && (
+                            <div style={{ display: "flex", gap: "0.4rem", marginTop: "0.5rem", justifyContent: "flex-end" }}>
+                              {d.status === "open" && (
+                                <button
+                                  className="btn btn-outline btn-sm"
+                                  style={{ fontSize: "0.7rem", padding: "0.25rem 0.6rem", borderColor: "rgba(245,158,11,0.4)", color: "var(--amber)" }}
+                                  onClick={() => handleDisputeStatusChange(d.id, "reviewing")}
+                                >
+                                  Mark Reviewing
+                                </button>
+                              )}
+                              <button
+                                className="btn btn-outline btn-sm"
+                                style={{ fontSize: "0.7rem", padding: "0.25rem 0.6rem", borderColor: "rgba(34,197,94,0.4)", color: "var(--success)" }}
+                                onClick={() => handleDisputeStatusChange(d.id, "resolved")}
+                              >
+                                ✓ Resolve
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                      <div style={{ marginTop: "0.75rem" }}>
+                        <p style={{ fontSize: "0.78rem", color: "var(--amber)", fontWeight: 600, marginBottom: "0.3rem" }}>
+                          Reason: {d.reason}
+                        </p>
+                        <p className={styles.inquiryBody}>{d.description}</p>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            )}
+
+            {/* ━━━━━━━━━━ APPLICATIONS TAB ━━━━━━━━━━ */}
+            {activeTab === "applications" && (
+              <div className={styles.inquiryList}>
+                {/* Summary chips */}
+                <div style={{ display: "flex", gap: "0.75rem", marginBottom: "1.5rem", flexWrap: "wrap" }}>
+                  {(["pending", "approved", "rejected"] as const).map((s) => {
+                    const count = applications.filter(a => a.status === s).length;
+                    const color = s === "pending" ? "var(--amber)" : s === "approved" ? "var(--success)" : "var(--danger)";
+                    return (
+                      <div key={s} style={{
+                        display: "flex", alignItems: "center", gap: "0.5rem",
+                        background: "var(--bg-800)", border: "1px solid var(--border)",
+                        borderRadius: "var(--r-sm)", padding: "0.5rem 1rem",
+                        fontSize: "0.82rem"
+                      }}>
+                        <span style={{ width: "8px", height: "8px", borderRadius: "50%", background: color, display: "inline-block" }} />
+                        <span style={{ textTransform: "capitalize", fontWeight: 600 }}>{s}</span>
+                        <span style={{ color: "var(--text-secondary)" }}>({count})</span>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {applications.length === 0 ? (
+                  <div className={styles.card} style={{ textAlign: "center", padding: "4rem" }}>
+                    <span style={{ fontSize: "2rem" }}>📝</span>
+                    <h4 style={{ marginTop: "1rem", color: "var(--text-secondary)" }}>No applications found — keep promoting the Careers page!</h4>
+                  </div>
+                ) : (
+                  applications.map((app) => (
+                    <div key={app.id} className={styles.inquiryItem} style={{
+                      borderLeft: app.status === "pending" ? "3px solid var(--amber)" :
+                                  app.status === "approved" ? "3px solid var(--success)" :
+                                  "3px solid var(--danger)"
+                    }}>
+                      <div className={styles.inquiryHeader}>
+                        <div style={{ display: "flex", gap: "1rem", alignItems: "flex-start" }}>
+                          <div className={styles.providerAvatar} style={{
+                            width: "48px", height: "48px", borderRadius: "50%",
+                            background: app.status === "approved" ? "rgba(34,197,94,0.08)" : app.status === "rejected" ? "rgba(239,68,68,0.08)" : "rgba(245,158,11,0.08)",
+                            color: app.status === "approved" ? "var(--success)" : app.status === "rejected" ? "var(--danger)" : "var(--amber)",
+                            display: "flex", alignItems: "center", justifyContent: "center", fontWeight: "bold", fontSize: "1.1rem"
+                          }}>
+                            {app.avatar}
+                          </div>
+                          <div>
+                            <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.4rem", flexWrap: "wrap" }}>
+                              <span className={`badge ${
+                                app.status === "pending" ? "badge-amber" :
+                                app.status === "approved" ? "badge-success" : "badge-danger"
+                              }`} style={{ fontSize: "0.6rem" }}>
+                                {app.status.toUpperCase()}
+                              </span>
+                              <span style={{ fontFamily: "monospace", fontSize: "0.72rem", color: "var(--text-muted)" }}>{app.id}</span>
+                              <span style={{ fontFamily: "monospace", fontSize: "0.72rem", color: "var(--text-secondary)" }}>ID: {app.licenseId}</span>
+                            </div>
+                            <h4 className={styles.inquiryTitle}>{app.name}</h4>
+                            <a href={`tel:${app.phone}`} className={styles.inquiryEmail}>{app.phone}</a>
+                          </div>
+                        </div>
+                        <div style={{ textAlign: "right", flexShrink: 0 }}>
+                          <div className={styles.inquiryTime}>{new Date(app.createdAt).toLocaleString()}</div>
+                          {/* Application status action buttons */}
+                          {app.status === "pending" && (
+                            <div style={{ display: "flex", gap: "0.5rem", marginTop: "0.5rem", justifyContent: "flex-end" }}>
+                              <button
+                                className="btn btn-outline btn-sm"
+                                style={{ fontSize: "0.7rem", padding: "0.25rem 0.6rem", borderColor: "rgba(239,68,68,0.4)", color: "var(--danger)" }}
+                                onClick={() => handleApplicationStatus(app.id, "rejected")}
+                              >
+                                ✕ Reject
+                              </button>
+                              <button
+                                className="btn btn-outline btn-sm"
+                                style={{ fontSize: "0.7rem", padding: "0.25rem 0.6rem", borderColor: "rgba(34,197,94,0.4)", color: "var(--success)", background: "rgba(34,197,94,0.04)" }}
+                                onClick={() => handleApplicationStatus(app.id, "approved")}
+                              >
+                                ✓ Approve & Register
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                      <div style={{ marginTop: "0.75rem", paddingLeft: "3.8rem" }}>
+                        <div style={{
+                          display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: "0.75rem",
+                          background: "rgba(255,255,255,0.01)", border: "1px solid var(--border)", borderRadius: "var(--r-sm)", padding: "0.75rem"
+                        }}>
+                          <div>
+                            <span style={{ display: "block", fontSize: "0.68rem", color: "var(--text-secondary)" }}>Speciality</span>
+                            <span style={{ fontSize: "0.8rem", fontWeight: 600, color: "var(--amber)" }}>
+                              {SERVICE_DETAILS[app.speciality] ?? app.speciality}
+                            </span>
+                          </div>
+                          <div>
+                            <span style={{ display: "block", fontSize: "0.68rem", color: "var(--text-secondary)" }}>Service Vehicle</span>
+                            <span style={{ fontSize: "0.8rem", fontWeight: 600 }}>{app.vehicle}</span>
+                          </div>
+                          <div>
+                            <span style={{ display: "block", fontSize: "0.68rem", color: "var(--text-secondary)" }}>License Plate</span>
+                            <span style={{ fontSize: "0.8rem", fontWeight: 600, fontFamily: "monospace" }}>{app.plate}</span>
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   ))
                 )}
