@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { API_BASE_URL } from "@/lib/api";
+import { LOCALE } from "@/lib/locale";
 import styles from "./Dashboard.module.css";
 
 // ── Types ───────────────────────────────────────────────────────────────────
@@ -28,6 +29,7 @@ interface Application {
   speciality: string;
   avatar: string;
   licenseId: string;
+  licenseImage?: string;
   status: "pending" | "approved" | "rejected";
   createdAt: string;
 }
@@ -100,6 +102,11 @@ export default function AdminDashboard() {
   const [serverError, setServerError] = useState<string | null>(null);
   const [requestFilter, setRequestFilter] = useState<"all" | "pending" | "active" | "completed">("all");
   const [searchQuery, setSearchQuery] = useState("");
+  const [expandedApplicationId, setExpandedApplicationId] = useState<string | null>(null);
+
+  const toggleApplication = (id: string) => {
+    setExpandedApplicationId((prev) => (prev === id ? null : id));
+  };
 
   // New Provider form state
   const [newProv, setNewProv] = useState({
@@ -205,6 +212,7 @@ export default function AdminDashboard() {
   };
 
   const handleStatusChange = (request: RequestData, newStatus: RequestData["status"]) => {
+    if (newStatus === "completed") return;
     handleUpdateRequest(request.id, { status: newStatus });
   };
 
@@ -801,16 +809,22 @@ export default function AdminDashboard() {
                         <>
                           <h4 className={styles.sectionTitle}>⚙️ Progress Controls</h4>
                           <div className={styles.statusSliderCard}>
+                            <p style={{ fontSize: "0.85rem", color: "var(--text-secondary)", marginBottom: "0.75rem" }}>
+                              {activeRequest.status === "completed"
+                                ? "Completed after the customer confirmed on their tracking page."
+                                : "Update technician progress. The customer confirms completion from their tracking link."}
+                            </p>
                             <div className={styles.statusStepContainer}>
-                              {(["matched", "en-route", "arrived", "completed"] as const).map((step) => {
+                              {(["matched", "en-route", "arrived"] as const).map((step) => {
                                 const isCurrent = activeRequest.status === step;
                                 return (
                                   <button
                                     key={step}
                                     className={`${styles.statusStepBtn} ${isCurrent ? styles.statusStepBtnActive : ""}`}
                                     onClick={() => handleStatusChange(activeRequest, step)}
+                                    disabled={activeRequest.status === "completed"}
                                   >
-                                    {step === "matched" ? "Matched" : step === "en-route" ? "En Route" : step === "arrived" ? "Arrived" : "Completed"}
+                                    {step === "matched" ? "Matched" : step === "en-route" ? "En Route" : "Arrived"}
                                   </button>
                                 );
                               })}
@@ -898,7 +912,7 @@ export default function AdminDashboard() {
                         id="prov-name"
                         type="text"
                         className="form-input"
-                        placeholder="Dave Miller"
+                        placeholder="e.g. Tunde Adeyemi"
                         required
                         value={newProv.name}
                         onChange={(e) => setNewProv(p => ({ ...p, name: e.target.value }))}
@@ -910,7 +924,7 @@ export default function AdminDashboard() {
                         id="prov-phone"
                         type="tel"
                         className="form-input"
-                        placeholder="+1 (555) 991-3434"
+                        placeholder={LOCALE.phonePlaceholder}
                         required
                         value={newProv.phone}
                         onChange={(e) => setNewProv(p => ({ ...p, phone: e.target.value }))}
@@ -934,7 +948,7 @@ export default function AdminDashboard() {
                         id="prov-plate"
                         type="text"
                         className="form-input"
-                        placeholder="TOW-8821"
+                        placeholder={LOCALE.platePlaceholder}
                         required
                         value={newProv.plate}
                         onChange={(e) => setNewProv(p => ({ ...p, plate: e.target.value }))}
@@ -1132,52 +1146,125 @@ export default function AdminDashboard() {
                     <h4 style={{ marginTop: "1rem", color: "var(--text-secondary)" }}>No applications found — keep promoting the Careers page!</h4>
                   </div>
                 ) : (
-                  applications.map((app) => (
-                    <div key={app.id} className={styles.inquiryItem} style={{
-                      borderLeft: app.status === "pending" ? "3px solid var(--amber)" :
-                                  app.status === "approved" ? "3px solid var(--success)" :
-                                  "3px solid var(--danger)"
-                    }}>
-                      <div className={styles.inquiryHeader}>
-                        <div style={{ display: "flex", gap: "1rem", alignItems: "flex-start" }}>
-                          <div className={styles.providerAvatar} style={{
-                            width: "48px", height: "48px", borderRadius: "50%",
-                            background: app.status === "approved" ? "rgba(34,197,94,0.08)" : app.status === "rejected" ? "rgba(239,68,68,0.08)" : "rgba(245,158,11,0.08)",
-                            color: app.status === "approved" ? "var(--success)" : app.status === "rejected" ? "var(--danger)" : "var(--amber)",
-                            display: "flex", alignItems: "center", justifyContent: "center", fontWeight: "bold", fontSize: "1.1rem"
-                          }}>
+                  applications.map((app) => {
+                    const isExpanded = expandedApplicationId === app.id;
+                    return (
+                    <div
+                      key={app.id}
+                      className={`${styles.appCard} ${isExpanded ? styles.appCardExpanded : ""}`}
+                      style={{
+                        borderLeftColor:
+                          app.status === "pending" ? "var(--amber)" :
+                          app.status === "approved" ? "var(--success)" :
+                          "var(--danger)",
+                      }}
+                    >
+                      <button
+                        type="button"
+                        className={styles.appSummary}
+                        onClick={() => toggleApplication(app.id)}
+                        aria-expanded={isExpanded}
+                      >
+                        <div className={styles.appSummaryMain}>
+                          <div
+                            className={styles.appAvatar}
+                            style={{
+                              background:
+                                app.status === "approved" ? "rgba(34,197,94,0.08)" :
+                                app.status === "rejected" ? "rgba(239,68,68,0.08)" :
+                                "rgba(245,158,11,0.08)",
+                              color:
+                                app.status === "approved" ? "var(--success)" :
+                                app.status === "rejected" ? "var(--danger)" :
+                                "var(--amber)",
+                            }}
+                          >
                             {app.avatar}
                           </div>
-                          <div>
-                            <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.4rem", flexWrap: "wrap" }}>
+                          <div className={styles.appSummaryText}>
+                            <div className={styles.appSummaryTop}>
                               <span className={`badge ${
                                 app.status === "pending" ? "badge-amber" :
                                 app.status === "approved" ? "badge-success" : "badge-danger"
                               }`} style={{ fontSize: "0.6rem" }}>
                                 {app.status.toUpperCase()}
                               </span>
-                              <span style={{ fontFamily: "monospace", fontSize: "0.72rem", color: "var(--text-muted)" }}>{app.id}</span>
-                              <span style={{ fontFamily: "monospace", fontSize: "0.72rem", color: "var(--text-secondary)" }}>ID: {app.licenseId}</span>
+                              <span className={styles.appId}>{app.id}</span>
                             </div>
-                            <h4 className={styles.inquiryTitle}>{app.name}</h4>
-                            <a href={`tel:${app.phone}`} className={styles.inquiryEmail}>{app.phone}</a>
+                            <h4 className={styles.appName}>{app.name}</h4>
+                            <p className={styles.appMeta}>
+                              {SERVICE_DETAILS[app.speciality] ?? app.speciality}
+                              <span className={styles.appMetaDot}>·</span>
+                              {new Date(app.createdAt).toLocaleDateString(undefined, {
+                                month: "short",
+                                day: "numeric",
+                                year: "numeric",
+                              })}
+                            </p>
                           </div>
                         </div>
-                        <div style={{ textAlign: "right", flexShrink: 0 }}>
-                          <div className={styles.inquiryTime}>{new Date(app.createdAt).toLocaleString()}</div>
-                          {/* Application status action buttons */}
+                        <span className={`${styles.appChevron} ${isExpanded ? styles.appChevronOpen : ""}`} aria-hidden>
+                          ▾
+                        </span>
+                      </button>
+
+                      {isExpanded && (
+                        <div className={styles.appDetails}>
+                          <div className={styles.appDetailsGrid}>
+                            <div>
+                              <span className={styles.appDetailLabel}>Phone</span>
+                              <a href={`tel:${app.phone}`} className={styles.appDetailValue}>{app.phone}</a>
+                            </div>
+                            <div>
+                              <span className={styles.appDetailLabel}>License / ID Number</span>
+                              <span className={styles.appDetailValue} style={{ fontFamily: "monospace" }}>{app.licenseId}</span>
+                            </div>
+                            <div>
+                              <span className={styles.appDetailLabel}>Speciality</span>
+                              <span className={styles.appDetailValue} style={{ color: "var(--amber)" }}>
+                                {SERVICE_DETAILS[app.speciality] ?? app.speciality}
+                              </span>
+                            </div>
+                            <div>
+                              <span className={styles.appDetailLabel}>Service Vehicle</span>
+                              <span className={styles.appDetailValue}>{app.vehicle}</span>
+                            </div>
+                            <div>
+                              <span className={styles.appDetailLabel}>License Plate</span>
+                              <span className={styles.appDetailValue} style={{ fontFamily: "monospace" }}>{app.plate}</span>
+                            </div>
+                            <div>
+                              <span className={styles.appDetailLabel}>Submitted</span>
+                              <span className={styles.appDetailValue}>{new Date(app.createdAt).toLocaleString()}</span>
+                            </div>
+                          </div>
+
+                          {app.licenseImage && (
+                            <div className={styles.appLicenseBlock}>
+                              <span className={styles.appDetailLabel}>License / ID Photo</span>
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              <img
+                                src={app.licenseImage}
+                                alt={`${app.name} license`}
+                                className={styles.appLicenseImg}
+                              />
+                            </div>
+                          )}
+
                           {app.status === "pending" && (
-                            <div style={{ display: "flex", gap: "0.5rem", marginTop: "0.5rem", justifyContent: "flex-end" }}>
+                            <div className={styles.appActions}>
                               <button
+                                type="button"
                                 className="btn btn-outline btn-sm"
-                                style={{ fontSize: "0.7rem", padding: "0.25rem 0.6rem", borderColor: "rgba(239,68,68,0.4)", color: "var(--danger)" }}
+                                style={{ borderColor: "rgba(239,68,68,0.4)", color: "var(--danger)" }}
                                 onClick={() => handleApplicationStatus(app.id, "rejected")}
                               >
                                 ✕ Reject
                               </button>
                               <button
+                                type="button"
                                 className="btn btn-outline btn-sm"
-                                style={{ fontSize: "0.7rem", padding: "0.25rem 0.6rem", borderColor: "rgba(34,197,94,0.4)", color: "var(--success)", background: "rgba(34,197,94,0.04)" }}
+                                style={{ borderColor: "rgba(34,197,94,0.4)", color: "var(--success)", background: "rgba(34,197,94,0.04)" }}
                                 onClick={() => handleApplicationStatus(app.id, "approved")}
                               >
                                 ✓ Approve & Register
@@ -1185,30 +1272,10 @@ export default function AdminDashboard() {
                             </div>
                           )}
                         </div>
-                      </div>
-                      <div style={{ marginTop: "0.75rem", paddingLeft: "3.8rem" }}>
-                        <div style={{
-                          display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: "0.75rem",
-                          background: "rgba(255,255,255,0.01)", border: "1px solid var(--border)", borderRadius: "var(--r-sm)", padding: "0.75rem"
-                        }}>
-                          <div>
-                            <span style={{ display: "block", fontSize: "0.68rem", color: "var(--text-secondary)" }}>Speciality</span>
-                            <span style={{ fontSize: "0.8rem", fontWeight: 600, color: "var(--amber)" }}>
-                              {SERVICE_DETAILS[app.speciality] ?? app.speciality}
-                            </span>
-                          </div>
-                          <div>
-                            <span style={{ display: "block", fontSize: "0.68rem", color: "var(--text-secondary)" }}>Service Vehicle</span>
-                            <span style={{ fontSize: "0.8rem", fontWeight: 600 }}>{app.vehicle}</span>
-                          </div>
-                          <div>
-                            <span style={{ display: "block", fontSize: "0.68rem", color: "var(--text-secondary)" }}>License Plate</span>
-                            <span style={{ fontSize: "0.8rem", fontWeight: 600, fontFamily: "monospace" }}>{app.plate}</span>
-                          </div>
-                        </div>
-                      </div>
+                      )}
                     </div>
-                  ))
+                    );
+                  })
                 )}
               </div>
             )}
