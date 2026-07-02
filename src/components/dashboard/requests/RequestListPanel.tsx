@@ -82,7 +82,9 @@ export default function RequestListPanel({
                         ? "badge-danger"
                         : req.status === "completed"
                           ? "badge-success"
-                          : "badge-amber"
+                          : req.status === "disputed"
+                            ? "badge-danger"
+                            : "badge-amber"
                     }`}
                     style={{ fontSize: "0.65rem" }}
                   >
@@ -90,13 +92,15 @@ export default function RequestListPanel({
                       ? "Pending"
                       : req.status === "completed"
                         ? "Completed"
-                        : req.status === "awaiting-payment"
-                          ? "Awaiting payment"
-                          : req.status === "in-progress"
-                            ? "In progress"
-                            : req.status === "assessing"
-                              ? "Assessing"
-                              : req.status}
+                        : req.status === "disputed"
+                          ? "Disputed"
+                          : req.status === "awaiting-payment"
+                            ? "Awaiting payment"
+                            : req.status === "in-progress"
+                              ? "In progress"
+                              : req.status === "assessing"
+                                ? "Assessing"
+                                : req.status}
                   </span>
                   {req.quoteStatus === "pending" && (
                     <span className="badge badge-info" style={{ fontSize: "0.65rem" }}>

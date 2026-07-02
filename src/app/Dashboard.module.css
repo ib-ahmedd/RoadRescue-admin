@@ -670,6 +670,13 @@
   border-color: rgba(34,197,94,0.2);
 }
 
+.statusStepBtnDisputed {
+  background: var(--danger-glow);
+  color: #f87171;
+  border-color: rgba(239, 68, 68, 0.35);
+  box-shadow: 0 0 10px rgba(239, 68, 68, 0.15);
+}
+
 .statusStepMonitor {
   flex: 1;
   padding: 0.5rem 0.35rem;

@@ -28,7 +28,11 @@ interface StatusProgressMonitorProps {
 }
 
 export default function StatusProgressMonitor({ request }: StatusProgressMonitorProps) {
-  const currentIndex = ALL_STATUSES.indexOf(request.status as (typeof ALL_STATUSES)[number]);
+  const effectiveStatus =
+    request.status === "disputed" ? "completed" : request.status;
+  const currentIndex = ALL_STATUSES.indexOf(
+    effectiveStatus as (typeof ALL_STATUSES)[number]
+  );
 
   return (
     <>
@@ -40,16 +44,24 @@ export default function StatusProgressMonitor({ request }: StatusProgressMonitor
         </p>
         <div className={styles.statusStepContainer} role="list" aria-label="Request progress">
           {ALL_STATUSES.map((step, index) => {
-            const isCurrent = request.status === step;
+            const isCompletedStep = step === "completed";
+            const isCurrent = isCompletedStep
+              ? request.status === "completed" || request.status === "disputed"
+              : request.status === step;
             const isCompleted = currentIndex !== -1 && index < currentIndex;
+            const label =
+              isCompletedStep && request.status === "disputed"
+                ? "Disputed"
+                : STATUS_LABELS[step];
+            const isDisputedCurrent = request.status === "disputed" && isCurrent;
             return (
               <div
                 key={step}
                 role="listitem"
                 aria-current={isCurrent ? "step" : undefined}
-                className={`${styles.statusStepMonitor} ${isCurrent ? styles.statusStepBtnActive : ""} ${isCompleted ? styles.statusStepBtnCompleted : ""}`}
+                className={`${styles.statusStepMonitor} ${isDisputedCurrent ? styles.statusStepBtnDisputed : isCurrent ? styles.statusStepBtnActive : ""} ${isCompleted ? styles.statusStepBtnCompleted : ""}`}
               >
-                {STATUS_LABELS[step]}
+                {label}
               </div>
             );
           })}

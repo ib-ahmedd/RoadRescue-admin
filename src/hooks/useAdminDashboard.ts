@@ -142,13 +142,17 @@ export function useAdminDashboard() {
         body: JSON.stringify({ id, status }),
       });
       if (res.ok) {
-        const updated = await res.json();
-        setDisputes((prev) => prev.map((d) => (d.id === id ? updated : d)));
+        const data = (await res.json()) as { dispute: Dispute; request?: RequestData | null };
+        setDisputes((prev) => prev.map((d) => (d.id === id ? data.dispute : d)));
+        if (data.request) {
+          setRequests((prev) => prev.map((r) => (r.id === data.request!.id ? data.request! : r)));
+        }
+        fetchData(true);
       }
     } catch (err) {
       console.error("Failed to update dispute status:", err);
     }
-  }, []);
+  }, [fetchData]);
 
   const handleApplicationStatus = useCallback(
     async (id: string, status: "approved" | "rejected") => {
@@ -218,7 +222,7 @@ export function useAdminDashboard() {
     const active = requests.filter((r) =>
       ["matched", "en-route", "arrived", "assessing", "awaiting-payment", "in-progress"].includes(r.status)
     ).length;
-    const completed = requests.filter((r) => r.status === "completed").length;
+    const completed = requests.filter((r) => r.status === "completed" || r.status === "disputed").length;
     const totalDrivers = providers.length;
     const availableDrivers = providers.filter((p) => p.status === "Available").length;
     return { total, pending, active, completed, totalDrivers, availableDrivers };
@@ -233,7 +237,7 @@ export function useAdminDashboard() {
     return requests.filter((req) => {
       if (requestFilter === "pending" && req.status !== "received") return false;
       if (requestFilter === "active" && !["matched", "en-route", "arrived", "assessing", "awaiting-payment", "in-progress"].includes(req.status)) return false;
-      if (requestFilter === "completed" && req.status !== "completed") return false;
+      if (requestFilter === "completed" && req.status !== "completed" && req.status !== "disputed") return false;
 
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase();

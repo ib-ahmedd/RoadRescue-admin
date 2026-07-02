@@ -56,7 +56,9 @@ export default function TechnicianDirectoryTable({ providers }: TechnicianDirect
                       ? "badge-success"
                       : p.status === "Dispatched"
                         ? "badge-amber"
-                        : "badge-danger"
+                        : p.status === "Engaged"
+                          ? "badge-danger"
+                          : "badge-danger"
                   }`}
                   style={{ fontSize: "0.7rem" }}
                 >

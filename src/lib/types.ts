@@ -1,4 +1,4 @@
-export type ProviderStatus = "Available" | "Dispatched" | "Offline";
+export type ProviderStatus = "Available" | "Dispatched" | "Engaged" | "Offline";
 export type RequestStatus =
   | "received"
   | "matched"
@@ -7,7 +7,8 @@ export type RequestStatus =
   | "assessing"
   | "awaiting-payment"
   | "in-progress"
-  | "completed";
+  | "completed"
+  | "disputed";
 export type AdminTab = "overview" | "requests" | "technicians" | "contacts" | "disputes" | "applications";
 export type RequestFilter = "all" | "pending" | "active" | "completed";
 
@@ -55,6 +56,8 @@ export interface RequestData {
   status: RequestStatus;
   assignedProvider: Provider | null;
   contacted: boolean;
+  completionConfirmed?: boolean;
+  technicianMarkedComplete?: boolean;
   bookingFee?: number;
   paymentStatus?: "pending" | "paid";
   paymentReference?: string;
