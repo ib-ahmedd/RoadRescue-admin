@@ -1,7 +1,13 @@
 "use client";
 
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { API_BASE_URL } from "@/lib/api";
+import {
+  buildSnapshot,
+  detectAdminChanges,
+  type AdminDataSnapshot,
+  type AdminNotification,
+} from "@/lib/adminNotifications";
 import { getServiceDistributionCounts, SERVICE_DETAILS } from "@/lib/constants";
 import type {
   AdminTab,
@@ -14,6 +20,7 @@ import type {
   RequestData,
   RequestFilter,
 } from "@/lib/types";
+import { useAdminNotifications } from "@/hooks/useAdminNotifications";
 
 const INITIAL_PROVIDER_FORM: NewProviderForm = {
   name: "",
@@ -40,6 +47,27 @@ export function useAdminDashboard() {
   const [newProv, setNewProv] = useState<NewProviderForm>(INITIAL_PROVIDER_FORM);
   const [provFormSubmitting, setProvFormSubmitting] = useState(false);
   const [provFormSuccess, setProvFormSuccess] = useState(false);
+  const [autoOpenQuoteReviewRequestId, setAutoOpenQuoteReviewRequestId] = useState<string | null>(null);
+
+  const { notifications, pushNotifications, dismissNotification } = useAdminNotifications();
+  const prevSnapshotRef = useRef<AdminDataSnapshot | null>(null);
+  const isInitialLoadRef = useRef(true);
+  const skipRequestStatusIdsRef = useRef<Set<string>>(new Set());
+  const requestsRef = useRef(requests);
+  const providersRef = useRef(providers);
+  const contactsRef = useRef(contacts);
+  const disputesRef = useRef(disputes);
+  const applicationsRef = useRef(applications);
+
+  requestsRef.current = requests;
+  providersRef.current = providers;
+  contactsRef.current = contacts;
+  disputesRef.current = disputes;
+  applicationsRef.current = applications;
+
+  const markSkipRequestStatus = useCallback((id: string) => {
+    skipRequestStatusIdsRef.current.add(id);
+  }, []);
 
   const toggleApplication = useCallback((id: string) => {
     setExpandedApplicationId((prev) => (prev === id ? null : id));
@@ -58,18 +86,43 @@ export function useAdminDashboard() {
         fetch(`${API_BASE_URL}/api/applications`),
       ]);
 
-      if (reqRes.ok) setRequests(await reqRes.json());
-      if (provRes.ok) setProviders(await provRes.json());
-      if (contactRes.ok) setContacts(await contactRes.json());
-      if (disputeRes.ok) setDisputes(await disputeRes.json());
-      if (appRes.ok) setApplications(await appRes.json());
+      const nextRequests: RequestData[] = reqRes.ok ? await reqRes.json() : requestsRef.current;
+      const nextProviders: Provider[] = provRes.ok ? await provRes.json() : providersRef.current;
+      const nextContacts: ContactSubmission[] = contactRes.ok ? await contactRes.json() : contactsRef.current;
+      const nextDisputes: Dispute[] = disputeRes.ok ? await disputeRes.json() : disputesRef.current;
+      const nextApplications: Application[] = appRes.ok ? await appRes.json() : applicationsRef.current;
+
+      const nextSnapshot = buildSnapshot(
+        nextRequests,
+        nextDisputes,
+        nextApplications,
+        nextContacts
+      );
+
+      if (isSilent && !isInitialLoadRef.current && prevSnapshotRef.current) {
+        const skipRequestIds = new Set(skipRequestStatusIdsRef.current);
+        skipRequestStatusIdsRef.current.clear();
+        const changes = detectAdminChanges(prevSnapshotRef.current, nextSnapshot, {
+          skipRequestIds,
+        });
+        pushNotifications(changes);
+      }
+
+      prevSnapshotRef.current = nextSnapshot;
+      isInitialLoadRef.current = false;
+
+      if (reqRes.ok) setRequests(nextRequests);
+      if (provRes.ok) setProviders(nextProviders);
+      if (contactRes.ok) setContacts(nextContacts);
+      if (disputeRes.ok) setDisputes(nextDisputes);
+      if (appRes.ok) setApplications(nextApplications);
     } catch (err) {
       console.error("API Fetch Error:", err);
       setServerError(`Could not connect to the RoadRescue API Server on ${API_BASE_URL}`);
     } finally {
       if (!isSilent) setLoading(false);
     }
-  }, []);
+  }, [pushNotifications]);
 
   useEffect(() => {
     fetchData();
@@ -87,6 +140,7 @@ export function useAdminDashboard() {
         });
         if (res.ok) {
           const updated = await res.json();
+          markSkipRequestStatus(id);
           setRequests((prev) => prev.map((r) => (r.id === id ? updated : r)));
           fetchData(true);
         }
@@ -94,7 +148,7 @@ export function useAdminDashboard() {
         console.error("Failed to patch request:", err);
       }
     },
-    [fetchData]
+    [fetchData, markSkipRequestStatus]
   );
 
   const handleDispatch = useCallback(
@@ -117,6 +171,7 @@ export function useAdminDashboard() {
         });
         if (res.ok) {
           const updated = await res.json();
+          markSkipRequestStatus(id);
           setRequests((prev) => prev.map((r) => (r.id === id ? updated : r)));
           fetchData(true);
           return true;
@@ -131,7 +186,7 @@ export function useAdminDashboard() {
         return false;
       }
     },
-    [fetchData]
+    [fetchData, markSkipRequestStatus]
   );
 
   const handleDisputeStatusChange = useCallback(async (id: string, status: Dispute["status"]) => {
@@ -145,6 +200,7 @@ export function useAdminDashboard() {
         const data = (await res.json()) as { dispute: Dispute; request?: RequestData | null };
         setDisputes((prev) => prev.map((d) => (d.id === id ? data.dispute : d)));
         if (data.request) {
+          markSkipRequestStatus(data.request.id);
           setRequests((prev) => prev.map((r) => (r.id === data.request!.id ? data.request! : r)));
         }
         fetchData(true);
@@ -152,7 +208,7 @@ export function useAdminDashboard() {
     } catch (err) {
       console.error("Failed to update dispute status:", err);
     }
-  }, [fetchData]);
+  }, [fetchData, markSkipRequestStatus]);
 
   const handleApplicationStatus = useCallback(
     async (id: string, status: "approved" | "rejected") => {
@@ -256,6 +312,57 @@ export function useAdminDashboard() {
     });
   }, [requests, requestFilter, searchQuery]);
 
+  const openRequestsWithFilter = useCallback((filter: RequestFilter) => {
+    setSearchQuery("");
+    setRequestFilter(filter);
+    setActiveTab("requests");
+  }, []);
+
+  const openTechniciansTab = useCallback(() => {
+    setActiveTab("technicians");
+  }, []);
+
+  const clearAutoOpenQuoteReview = useCallback(() => {
+    setAutoOpenQuoteReviewRequestId(null);
+  }, []);
+
+  const handleNotificationNavigate = useCallback(
+    (notification: AdminNotification) => {
+      dismissNotification(notification.toastId);
+
+      switch (notification.kind) {
+        case "new_request":
+          openRequestsWithFilter("pending");
+          break;
+        case "request_status":
+          setSearchQuery("");
+          setRequestFilter("all");
+          setActiveTab("requests");
+          if (notification.entityId) setSelectedRequestId(notification.entityId);
+          break;
+        case "quote_submitted":
+          setSearchQuery("");
+          setRequestFilter("active");
+          setActiveTab("requests");
+          if (notification.entityId) {
+            setSelectedRequestId(notification.entityId);
+            setAutoOpenQuoteReviewRequestId(notification.entityId);
+          }
+          break;
+        case "new_dispute":
+          setActiveTab("disputes");
+          break;
+        case "new_application":
+          setActiveTab("applications");
+          break;
+        case "new_contact":
+          setActiveTab("contacts");
+          break;
+      }
+    },
+    [dismissNotification, openRequestsWithFilter]
+  );
+
   return {
     activeTab,
     setActiveTab,
@@ -288,6 +395,13 @@ export function useAdminDashboard() {
     handleDisputeStatusChange,
     handleApplicationStatus,
     handleAddProvider,
+    openRequestsWithFilter,
+    openTechniciansTab,
+    autoOpenQuoteReviewRequestId,
+    clearAutoOpenQuoteReview,
+    notifications,
+    dismissNotification,
+    handleNotificationNavigate,
   };
 }
 

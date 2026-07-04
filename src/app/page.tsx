@@ -8,6 +8,7 @@ import DisputesTab from "@/components/dashboard/DisputesTab";
 import OverviewTab from "@/components/dashboard/OverviewTab";
 import RequestsTab from "@/components/dashboard/requests/RequestsTab";
 import TechniciansTab from "@/components/dashboard/TechniciansTab";
+import AdminToastStack from "@/components/notifications/AdminToastStack";
 import { useAdminDashboard } from "@/hooks/useAdminDashboard";
 import styles from "./Dashboard.module.css";
 
@@ -16,6 +17,11 @@ export default function AdminDashboard() {
 
   return (
     <div className={styles.layout}>
+      <AdminToastStack
+        notifications={dashboard.notifications}
+        onDismiss={dashboard.dismissNotification}
+        onNavigate={dashboard.handleNotificationNavigate}
+      />
       <DashboardSidebar
         activeTab={dashboard.activeTab}
         onTabChange={dashboard.setActiveTab}
@@ -61,6 +67,8 @@ export default function AdminDashboard() {
                 stats={dashboard.stats}
                 serviceDistribution={dashboard.serviceDistribution}
                 requests={dashboard.requests}
+                onOpenRequests={dashboard.openRequestsWithFilter}
+                onOpenTechnicians={dashboard.openTechniciansTab}
               />
             )}
             {dashboard.activeTab === "requests" && <RequestsTab {...dashboard} />}

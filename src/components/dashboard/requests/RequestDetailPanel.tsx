@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { SERVICE_DETAILS } from "@/lib/constants";
 import type { Provider, RequestData } from "@/lib/types";
 import DispatchSection from "./DispatchSection";
@@ -14,6 +14,8 @@ interface RequestDetailPanelProps {
   onUpdateRequest: (id: string, updates: Partial<RequestData>) => void;
   onDispatch: (request: RequestData, provider: Provider) => void;
   onQuoteApproval: (id: string, action: "approve" | "reject") => Promise<boolean>;
+  autoOpenQuoteReviewRequestId?: string | null;
+  onQuoteReviewAutoOpened?: () => void;
 }
 
 const QUOTE_STATUS_LABELS: Record<NonNullable<RequestData["quoteStatus"]>, string> = {
@@ -30,9 +32,24 @@ export default function RequestDetailPanel({
   onUpdateRequest,
   onDispatch,
   onQuoteApproval,
+  autoOpenQuoteReviewRequestId,
+  onQuoteReviewAutoOpened,
 }: RequestDetailPanelProps) {
   const [showQuoteModal, setShowQuoteModal] = useState(false);
   const [quoteSubmitting, setQuoteSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (
+      !request ||
+      !autoOpenQuoteReviewRequestId ||
+      request.id !== autoOpenQuoteReviewRequestId ||
+      (request.quoteStatus ?? "none") !== "pending"
+    ) {
+      return;
+    }
+    setShowQuoteModal(true);
+    onQuoteReviewAutoOpened?.();
+  }, [request, autoOpenQuoteReviewRequestId, onQuoteReviewAutoOpened]);
 
   if (!request) {
     return (

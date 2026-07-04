@@ -1,5 +1,7 @@
+import { useState } from "react";
 import { SERVICE_DETAILS } from "@/lib/constants";
 import type { Application } from "@/lib/types";
+import LicenseImageLightbox from "@/components/dashboard/LicenseImageLightbox";
 import styles from "@/app/Dashboard.module.css";
 
 interface ApplicationCardProps {
@@ -17,6 +19,8 @@ export default function ApplicationCard({
   onApprove,
   onReject,
 }: ApplicationCardProps) {
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+
   return (
     <div
       className={`${styles.appCard} ${isExpanded ? styles.appCardExpanded : ""}`}
@@ -123,8 +127,23 @@ export default function ApplicationCard({
           {app.licenseImage && (
             <div className={styles.appLicenseBlock}>
               <span className={styles.appDetailLabel}>License / ID Photo</span>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={app.licenseImage} alt={`${app.name} license`} className={styles.appLicenseImg} />
+              <span className={styles.appLicenseHint}>Click to enlarge</span>
+              <button
+                type="button"
+                className={styles.appLicenseImgBtn}
+                onClick={() => setLightboxOpen(true)}
+                aria-label={`View enlarged license photo for ${app.name}`}
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={app.licenseImage} alt={`${app.name} license`} className={styles.appLicenseImg} />
+              </button>
+              <LicenseImageLightbox
+                open={lightboxOpen}
+                src={app.licenseImage}
+                alt={`${app.name} license`}
+                caption={`${app.name} • ${app.licenseId}`}
+                onClose={() => setLightboxOpen(false)}
+              />
             </div>
           )}
 

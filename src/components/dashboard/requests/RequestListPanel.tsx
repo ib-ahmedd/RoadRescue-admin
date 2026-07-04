@@ -1,6 +1,6 @@
 import { SERVICE_DETAILS } from "@/lib/constants";
 import { formatTimeAgo } from "@/lib/formatTimeAgo";
-import type { RequestData, RequestFilter } from "@/lib/types";
+import type { DashboardStats, RequestData, RequestFilter } from "@/lib/types";
 import styles from "@/app/Dashboard.module.css";
 
 interface RequestListPanelProps {
@@ -11,6 +11,7 @@ interface RequestListPanelProps {
   onSearchChange: (query: string) => void;
   requestFilter: RequestFilter;
   onFilterChange: (filter: RequestFilter) => void;
+  stats: DashboardStats;
 }
 
 export default function RequestListPanel({
@@ -21,6 +22,7 @@ export default function RequestListPanel({
   onSearchChange,
   requestFilter,
   onFilterChange,
+  stats,
 }: RequestListPanelProps) {
   return (
     <div className={styles.listPanel}>
@@ -35,15 +37,45 @@ export default function RequestListPanel({
           />
         </div>
         <div className={styles.filterTabs}>
-          {(["all", "pending", "active", "completed"] as const).map((tab) => (
-            <button
-              key={tab}
-              className={`${styles.filterTab} ${requestFilter === tab ? styles.filterTabActive : ""}`}
-              onClick={() => onFilterChange(tab)}
-            >
-              {tab.charAt(0).toUpperCase() + tab.slice(1)}
-            </button>
-          ))}
+          {(["all", "pending", "active", "completed"] as const).map((tab) => {
+            const isActive = requestFilter === tab;
+            const pendingHasItems = tab === "pending" && stats.pending > 0;
+            const activeHasItems = tab === "active" && stats.active > 0;
+            const count = tab === "pending" ? stats.pending : tab === "active" ? stats.active : 0;
+
+            return (
+              <button
+                key={tab}
+                type="button"
+                className={[
+                  styles.filterTab,
+                  isActive && styles.filterTabActive,
+                  pendingHasItems && styles.filterTabPendingHasItems,
+                  activeHasItems && styles.filterTabActiveHasItems,
+                ]
+                  .filter(Boolean)
+                  .join(" ")}
+                onClick={() => onFilterChange(tab)}
+              >
+                <span className={styles.filterTabLabel}>
+                  {tab.charAt(0).toUpperCase() + tab.slice(1)}
+                  {(pendingHasItems || activeHasItems) && (
+                    <span
+                      className={[
+                        styles.filterTabBadge,
+                        pendingHasItems && styles.filterTabBadgeDanger,
+                        activeHasItems && styles.filterTabBadgeAmber,
+                      ]
+                        .filter(Boolean)
+                        .join(" ")}
+                    >
+                      {count}
+                    </span>
+                  )}
+                </span>
+              </button>
+            );
+          })}
         </div>
       </div>
 

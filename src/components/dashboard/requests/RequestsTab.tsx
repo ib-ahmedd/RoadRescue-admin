@@ -17,6 +17,9 @@ type RequestsTabProps = Pick<
   | "handleUpdateRequest"
   | "handleDispatch"
   | "handleQuoteApproval"
+  | "stats"
+  | "autoOpenQuoteReviewRequestId"
+  | "clearAutoOpenQuoteReview"
 >;
 
 export default function RequestsTab({
@@ -32,6 +35,9 @@ export default function RequestsTab({
   handleUpdateRequest,
   handleDispatch,
   handleQuoteApproval,
+  stats,
+  autoOpenQuoteReviewRequestId,
+  clearAutoOpenQuoteReview,
 }: RequestsTabProps) {
   return (
     <div className={styles.splitLayout}>
@@ -43,6 +49,7 @@ export default function RequestsTab({
         onSearchChange={setSearchQuery}
         requestFilter={requestFilter}
         onFilterChange={setRequestFilter}
+        stats={stats}
       />
       <RequestDetailPanel
         request={activeRequest}
@@ -50,6 +57,8 @@ export default function RequestsTab({
         onUpdateRequest={handleUpdateRequest}
         onDispatch={handleDispatch}
         onQuoteApproval={handleQuoteApproval}
+        autoOpenQuoteReviewRequestId={autoOpenQuoteReviewRequestId}
+        onQuoteReviewAutoOpened={clearAutoOpenQuoteReview}
       />
     </div>
   );

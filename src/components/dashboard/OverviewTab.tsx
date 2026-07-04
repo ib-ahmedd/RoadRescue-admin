@@ -1,40 +1,75 @@
 import { SERVICE_DETAILS } from "@/lib/constants";
 import { formatTimeAgo } from "@/lib/formatTimeAgo";
-import type { DashboardStats, RequestData } from "@/lib/types";
+import type { DashboardStats, RequestData, RequestFilter } from "@/lib/types";
 import styles from "@/app/Dashboard.module.css";
 
 interface OverviewTabProps {
   stats: DashboardStats;
   serviceDistribution: Record<string, number>;
   requests: RequestData[];
+  onOpenRequests: (filter: RequestFilter) => void;
+  onOpenTechnicians: () => void;
 }
 
-export default function OverviewTab({ stats, serviceDistribution, requests }: OverviewTabProps) {
+export default function OverviewTab({
+  stats,
+  serviceDistribution,
+  requests,
+  onOpenRequests,
+  onOpenTechnicians,
+}: OverviewTabProps) {
   return (
     <>
       <div className={styles.statsGrid}>
-        <div className={styles.statCard}>
+        <button type="button" className={styles.statCard} onClick={() => onOpenRequests("all")}>
           <span className={styles.statIcon}>📋</span>
           <div>
             <p className={styles.statLabel}>Total Rescues</p>
             <p className={styles.statValue}>{stats.total}</p>
           </div>
-        </div>
-        <div className={styles.statCard} style={{ borderLeft: "4px solid var(--danger)" }}>
+        </button>
+        <button
+          type="button"
+          className={styles.statCard}
+          style={{ borderLeft: "4px solid var(--danger)" }}
+          onClick={() => onOpenRequests("pending")}
+        >
           <span className={styles.statIcon} style={{ background: "rgba(239,68,68,0.06)" }}>⏳</span>
           <div>
             <p className={styles.statLabel}>Unassigned</p>
             <p className={styles.statValue} style={{ color: "var(--danger)" }}>{stats.pending}</p>
           </div>
-        </div>
-        <div className={styles.statCard} style={{ borderLeft: "4px solid var(--amber)" }}>
+        </button>
+        <button
+          type="button"
+          className={styles.statCard}
+          style={{ borderLeft: "4px solid var(--amber)" }}
+          onClick={() => onOpenRequests("active")}
+        >
           <span className={styles.statIcon} style={{ background: "rgba(245,158,11,0.06)" }}>🚛</span>
           <div>
             <p className={styles.statLabel}>Active Missions</p>
             <p className={styles.statValue} style={{ color: "var(--amber)" }}>{stats.active}</p>
           </div>
-        </div>
-        <div className={styles.statCard} style={{ borderLeft: "4px solid var(--success)" }}>
+        </button>
+        <button
+          type="button"
+          className={styles.statCard}
+          style={{ borderLeft: "4px solid var(--success)" }}
+          onClick={() => onOpenRequests("completed")}
+        >
+          <span className={styles.statIcon} style={{ background: "rgba(34,197,94,0.06)" }}>✅</span>
+          <div>
+            <p className={styles.statLabel}>Completed Rescues</p>
+            <p className={styles.statValue} style={{ color: "var(--success)" }}>{stats.completed}</p>
+          </div>
+        </button>
+        <button
+          type="button"
+          className={styles.statCard}
+          style={{ borderLeft: "4px solid var(--info)" }}
+          onClick={onOpenTechnicians}
+        >
           <span className={styles.statIcon} style={{ background: "rgba(34,197,94,0.06)" }}>👷</span>
           <div>
             <p className={styles.statLabel}>Techs Active</p>
@@ -42,7 +77,7 @@ export default function OverviewTab({ stats, serviceDistribution, requests }: Ov
               {stats.availableDrivers} / {stats.totalDrivers}
             </p>
           </div>
-        </div>
+        </button>
       </div>
 
       <div className={styles.overviewGrid}>
