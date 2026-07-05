@@ -116,8 +116,7 @@ export default function QuoteReviewModal({
               </button>
               <button
                 type="button"
-                className="btn btn-outline"
-                style={{ borderColor: "rgba(239,68,68,0.4)", color: "var(--danger)" }}
+                className="btn btn-outline-danger"
                 onClick={handleReject}
                 disabled={submitting}
               >

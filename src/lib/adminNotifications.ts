@@ -3,6 +3,7 @@ import type {
   Application,
   ContactSubmission,
   Dispute,
+  Payment,
   RequestData,
   RequestStatus,
 } from "@/lib/types";
@@ -11,6 +12,7 @@ export type AdminNotificationKind =
   | "new_request"
   | "request_status"
   | "quote_submitted"
+  | "payment_received"
   | "new_dispute"
   | "new_application"
   | "new_contact";
@@ -39,6 +41,7 @@ export interface AdminDataSnapshot {
   disputes: Map<string, { customerName: string; requestId: string }>;
   applications: Map<string, { name: string; speciality: string }>;
   contacts: Map<string, { name: string; subject: string }>;
+  payments: Map<string, { customerName: string; type: Payment["type"]; amount: number; requestId: string }>;
 }
 
 function formatStatus(status: RequestStatus): string {
@@ -60,7 +63,8 @@ export function buildSnapshot(
   requests: RequestData[],
   disputes: Dispute[],
   applications: Application[],
-  contacts: ContactSubmission[]
+  contacts: ContactSubmission[],
+  payments: Payment[] = []
 ): AdminDataSnapshot {
   return {
     requests: new Map(
@@ -83,6 +87,12 @@ export function buildSnapshot(
     ),
     contacts: new Map(
       contacts.map((c) => [c.id, { name: c.name, subject: c.subject }])
+    ),
+    payments: new Map(
+      payments.map((p) => [
+        p.id,
+        { customerName: p.customerName, type: p.type, amount: p.amount, requestId: p.requestId },
+      ])
     ),
   };
 }
@@ -172,6 +182,18 @@ export function detectAdminChanges(
         title: "New contact enquiry",
         message: `${contact.name} • ${contact.subject}`,
         entityId: id,
+      });
+    }
+  }
+
+  for (const [id, payment] of next.payments) {
+    if (!prev.payments.has(id)) {
+      const typeLabel = payment.type === "booking_fee" ? "Booking fee" : "Quote payment";
+      notifications.push({
+        kind: "payment_received",
+        title: "Payment received",
+        message: `${payment.customerName} • ${typeLabel} • ₦${payment.amount.toLocaleString("en-NG")}`,
+        entityId: payment.requestId,
       });
     }
   }

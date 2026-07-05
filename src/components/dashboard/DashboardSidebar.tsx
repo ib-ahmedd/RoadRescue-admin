@@ -88,6 +88,12 @@ export default function DashboardSidebar({
             </span>
           )}
         </button>
+        <button
+          className={`${styles.navItem} ${activeTab === "payments" ? styles.navItemActive : ""}`}
+          onClick={() => onTabChange("payments")}
+        >
+          💳 Account Balance
+        </button>
       </nav>
 
       <div className={styles.sidebarFooter}>

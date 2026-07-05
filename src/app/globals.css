@@ -233,22 +233,67 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
 }
 
 .btn-secondary {
-  background: var(--bg-600);
+  background: rgba(255, 255, 255, 0.1);
   color: var(--text-primary);
-  border: 1px solid var(--border-md);
+  border: 1px solid rgba(255, 255, 255, 0.18);
 }
-.btn-secondary:hover {
-  background: var(--bg-500);
+.btn-secondary:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.14);
+  border-color: rgba(255, 255, 255, 0.24);
 }
 
 .btn-outline {
-  border: 1px solid var(--border-md);
-  color: var(--text-secondary);
+  border: 1.5px solid rgba(255, 255, 255, 0.2);
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.07);
 }
-.btn-outline:hover {
+.btn-outline:hover:not(:disabled) {
   color: var(--text-primary);
   border-color: var(--amber);
   background: var(--amber-glow);
+}
+
+.btn-success {
+  background: linear-gradient(135deg, #4ade80, var(--success));
+  color: #052e16;
+  box-shadow: 0 4px 14px var(--success-glow);
+}
+.btn-success:hover:not(:disabled) {
+  opacity: 0.95;
+  transform: translateY(-1px);
+}
+
+.btn-outline-success {
+  border: 1.5px solid rgba(34, 197, 94, 0.45);
+  color: #86efac;
+  background: rgba(34, 197, 94, 0.12);
+}
+.btn-outline-success:hover:not(:disabled) {
+  border-color: var(--success);
+  background: rgba(34, 197, 94, 0.2);
+  color: #bbf7d0;
+}
+
+.btn-outline-danger {
+  border: 1.5px solid rgba(239, 68, 68, 0.45);
+  color: #fca5a5;
+  background: rgba(239, 68, 68, 0.12);
+}
+.btn-outline-danger:hover:not(:disabled) {
+  border-color: var(--danger);
+  background: rgba(239, 68, 68, 0.2);
+  color: #fff;
+}
+
+.btn-outline-amber {
+  border: 1.5px solid rgba(245, 158, 11, 0.45);
+  color: var(--amber-light);
+  background: rgba(245, 158, 11, 0.12);
+}
+.btn-outline-amber:hover:not(:disabled) {
+  border-color: var(--amber);
+  background: rgba(245, 158, 11, 0.2);
+  color: #fde68a;
 }
 
 .btn-danger {
@@ -256,9 +301,49 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   color: #fff;
   box-shadow: 0 4px 14px rgba(239, 68, 68, 0.25);
 }
-.btn-danger:hover {
+.btn-danger:hover:not(:disabled) {
   opacity: 0.95;
   transform: translateY(-1px);
+}
+
+.btn-sm {
+  padding: 0.45rem 0.9rem;
+  font-size: 0.8rem;
+}
+
+.w-full {
+  width: 100%;
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+[data-theme="light"] .btn-secondary {
+  background: rgba(15, 23, 42, 0.06);
+  border-color: var(--border-md);
+}
+[data-theme="light"] .btn-secondary:hover:not(:disabled) {
+  background: rgba(15, 23, 42, 0.1);
+}
+
+[data-theme="light"] .btn-outline {
+  border-color: var(--border-md);
+  background: rgba(15, 23, 42, 0.04);
+}
+[data-theme="light"] .btn-outline-success {
+  color: #15803d;
+  background: rgba(34, 197, 94, 0.1);
+}
+[data-theme="light"] .btn-outline-danger {
+  color: #b91c1c;
+  background: rgba(239, 68, 68, 0.08);
+}
+[data-theme="light"] .btn-outline-amber {
+  color: var(--amber-dark);
+  background: rgba(245, 158, 11, 0.1);
 }
 
 /* ── Keyframes ──────────────────────────────────────────── */

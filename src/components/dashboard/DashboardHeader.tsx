@@ -9,6 +9,7 @@ const TAB_TITLES: Record<AdminTab, string> = {
   contacts: "Customer Support Inquiries",
   disputes: "Dispute Management",
   applications: "Technician Applications Review",
+  payments: "Account Balance & Payments",
 };
 
 interface DashboardHeaderProps {

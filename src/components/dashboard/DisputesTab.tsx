@@ -86,26 +86,14 @@ export default function DisputesTab({ disputes, onStatusChange }: DisputesTabPro
                   <div style={{ display: "flex", gap: "0.4rem", marginTop: "0.5rem", justifyContent: "flex-end" }}>
                     {d.status === "open" && (
                       <button
-                        className="btn btn-outline btn-sm"
-                        style={{
-                          fontSize: "0.7rem",
-                          padding: "0.25rem 0.6rem",
-                          borderColor: "rgba(245,158,11,0.4)",
-                          color: "var(--amber)",
-                        }}
+                        className="btn btn-outline-amber btn-sm"
                         onClick={() => onStatusChange(d.id, "reviewing")}
                       >
                         Mark Reviewing
                       </button>
                     )}
                     <button
-                      className="btn btn-outline btn-sm"
-                      style={{
-                        fontSize: "0.7rem",
-                        padding: "0.25rem 0.6rem",
-                        borderColor: "rgba(34,197,94,0.4)",
-                        color: "var(--success)",
-                      }}
+                      className="btn btn-outline-success btn-sm"
                       onClick={() => onStatusChange(d.id, "resolved")}
                     >
                       ✓ Resolve

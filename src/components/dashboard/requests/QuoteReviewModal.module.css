@@ -119,6 +119,11 @@
   flex-wrap: wrap;
 }
 
+.actions :global(.btn) {
+  flex: 1 1 auto;
+  min-width: 140px;
+}
+
 @keyframes fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }

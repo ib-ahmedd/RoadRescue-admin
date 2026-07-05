@@ -14,6 +14,7 @@ const KIND_CONFIG: Record<
   new_request: { icon: "📋", accentClass: styles.accentAmber },
   request_status: { icon: "🔄", accentClass: styles.accentInfo },
   quote_submitted: { icon: "💰", accentClass: styles.accentAmber },
+  payment_received: { icon: "💳", accentClass: styles.accentSuccess },
   new_dispute: { icon: "⚠️", accentClass: styles.accentDanger },
   new_application: { icon: "📝", accentClass: styles.accentSuccess },
   new_contact: { icon: "✉️", accentClass: styles.accentInfo },

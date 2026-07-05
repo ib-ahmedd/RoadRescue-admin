@@ -16,6 +16,8 @@ import type {
   DashboardStats,
   Dispute,
   NewProviderForm,
+  Payment,
+  PaymentSummary,
   Provider,
   RequestData,
   RequestFilter,
@@ -38,6 +40,13 @@ export function useAdminDashboard() {
   const [contacts, setContacts] = useState<ContactSubmission[]>([]);
   const [disputes, setDisputes] = useState<Dispute[]>([]);
   const [applications, setApplications] = useState<Application[]>([]);
+  const [payments, setPayments] = useState<Payment[]>([]);
+  const [paymentSummary, setPaymentSummary] = useState<PaymentSummary>({
+    accountBalance: 0,
+    bookingFeeTotal: 0,
+    quotePaymentTotal: 0,
+    transactionCount: 0,
+  });
   const [selectedRequestId, setSelectedRequestId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [serverError, setServerError] = useState<string | null>(null);
@@ -58,12 +67,14 @@ export function useAdminDashboard() {
   const contactsRef = useRef(contacts);
   const disputesRef = useRef(disputes);
   const applicationsRef = useRef(applications);
+  const paymentsRef = useRef(payments);
 
   requestsRef.current = requests;
   providersRef.current = providers;
   contactsRef.current = contacts;
   disputesRef.current = disputes;
   applicationsRef.current = applications;
+  paymentsRef.current = payments;
 
   const markSkipRequestStatus = useCallback((id: string) => {
     skipRequestStatusIdsRef.current.add(id);
@@ -78,12 +89,15 @@ export function useAdminDashboard() {
     setServerError(null);
 
     try {
-      const [reqRes, provRes, contactRes, disputeRes, appRes] = await Promise.all([
+      const [reqRes, provRes, contactRes, disputeRes, appRes, payRes, paySummaryRes] =
+        await Promise.all([
         fetch(`${API_BASE_URL}/api/requests`),
         fetch(`${API_BASE_URL}/api/providers`),
         fetch(`${API_BASE_URL}/api/contact`),
         fetch(`${API_BASE_URL}/api/disputes`),
         fetch(`${API_BASE_URL}/api/applications`),
+        fetch(`${API_BASE_URL}/api/payments`),
+        fetch(`${API_BASE_URL}/api/payments/summary`),
       ]);
 
       const nextRequests: RequestData[] = reqRes.ok ? await reqRes.json() : requestsRef.current;
@@ -91,12 +105,17 @@ export function useAdminDashboard() {
       const nextContacts: ContactSubmission[] = contactRes.ok ? await contactRes.json() : contactsRef.current;
       const nextDisputes: Dispute[] = disputeRes.ok ? await disputeRes.json() : disputesRef.current;
       const nextApplications: Application[] = appRes.ok ? await appRes.json() : applicationsRef.current;
+      const nextPayments: Payment[] = payRes.ok ? await payRes.json() : paymentsRef.current;
+      const nextPaymentSummary: PaymentSummary = paySummaryRes.ok
+        ? await paySummaryRes.json()
+        : paymentSummary;
 
       const nextSnapshot = buildSnapshot(
         nextRequests,
         nextDisputes,
         nextApplications,
-        nextContacts
+        nextContacts,
+        nextPayments
       );
 
       if (isSilent && !isInitialLoadRef.current && prevSnapshotRef.current) {
@@ -116,6 +135,8 @@ export function useAdminDashboard() {
       if (contactRes.ok) setContacts(nextContacts);
       if (disputeRes.ok) setDisputes(nextDisputes);
       if (appRes.ok) setApplications(nextApplications);
+      if (payRes.ok) setPayments(nextPayments);
+      if (paySummaryRes.ok) setPaymentSummary(nextPaymentSummary);
     } catch (err) {
       console.error("API Fetch Error:", err);
       setServerError(`Could not connect to the RoadRescue API Server on ${API_BASE_URL}`);
@@ -322,6 +343,17 @@ export function useAdminDashboard() {
     setActiveTab("technicians");
   }, []);
 
+  const openPaymentsTab = useCallback(() => {
+    setActiveTab("payments");
+  }, []);
+
+  const openRequestFromPayment = useCallback((requestId: string) => {
+    setSearchQuery("");
+    setRequestFilter("all");
+    setActiveTab("requests");
+    setSelectedRequestId(requestId);
+  }, []);
+
   const clearAutoOpenQuoteReview = useCallback(() => {
     setAutoOpenQuoteReviewRequestId(null);
   }, []);
@@ -358,6 +390,9 @@ export function useAdminDashboard() {
         case "new_contact":
           setActiveTab("contacts");
           break;
+        case "payment_received":
+          setActiveTab("payments");
+          break;
       }
     },
     [dismissNotification, openRequestsWithFilter]
@@ -371,6 +406,8 @@ export function useAdminDashboard() {
     contacts,
     disputes,
     applications,
+    payments,
+    paymentSummary,
     selectedRequestId,
     setSelectedRequestId,
     loading,
@@ -397,6 +434,8 @@ export function useAdminDashboard() {
     handleAddProvider,
     openRequestsWithFilter,
     openTechniciansTab,
+    openPaymentsTab,
+    openRequestFromPayment,
     autoOpenQuoteReviewRequestId,
     clearAutoOpenQuoteReview,
     notifications,

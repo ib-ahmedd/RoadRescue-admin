@@ -1,6 +1,7 @@
 "use client";
 
 import ApplicationsTab from "@/components/dashboard/ApplicationsTab";
+import PaymentsTab from "@/components/dashboard/PaymentsTab";
 import ContactsTab from "@/components/dashboard/ContactsTab";
 import DashboardHeader from "@/components/dashboard/DashboardHeader";
 import DashboardSidebar from "@/components/dashboard/DashboardSidebar";
@@ -65,10 +66,12 @@ export default function AdminDashboard() {
             {dashboard.activeTab === "overview" && (
               <OverviewTab
                 stats={dashboard.stats}
+                paymentSummary={dashboard.paymentSummary}
                 serviceDistribution={dashboard.serviceDistribution}
                 requests={dashboard.requests}
                 onOpenRequests={dashboard.openRequestsWithFilter}
                 onOpenTechnicians={dashboard.openTechniciansTab}
+                onOpenPayments={dashboard.openPaymentsTab}
               />
             )}
             {dashboard.activeTab === "requests" && <RequestsTab {...dashboard} />}
@@ -84,6 +87,18 @@ export default function AdminDashboard() {
                 onToggleApplication={dashboard.toggleApplication}
                 onApprove={(id) => dashboard.handleApplicationStatus(id, "approved")}
                 onReject={(id) => dashboard.handleApplicationStatus(id, "rejected")}
+              />
+            )}
+            {dashboard.activeTab === "payments" && (
+              <PaymentsTab
+                payments={dashboard.payments}
+                paymentSummary={dashboard.paymentSummary}
+                onSelectRequest={dashboard.setSelectedRequestId}
+                onOpenRequestsTab={() => {
+                  dashboard.setSearchQuery("");
+                  dashboard.setRequestFilter("all");
+                  dashboard.setActiveTab("requests");
+                }}
               />
             )}
           </div>

@@ -136,7 +136,7 @@
 /* ── Metrics ────────────────────────────────────────────── */
 .statsGrid {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 1.5rem;
   margin-bottom: 2.5rem;
 }
@@ -1014,6 +1014,159 @@
   justify-content: flex-end;
   padding-top: 0.5rem;
   border-top: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+/* ── Payments ───────────────────────────────────────────── */
+.paymentsLayout {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.paymentSummaryGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+}
+
+.paymentSummaryCard {
+  background: rgba(15, 22, 42, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: var(--r-md);
+  padding: 1.25rem;
+}
+
+.paymentSummaryPrimary {
+  border-color: rgba(168, 85, 247, 0.25);
+  background: linear-gradient(135deg, rgba(168, 85, 247, 0.12), rgba(15, 22, 42, 0.5));
+}
+
+.paymentSummaryLabel {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-secondary);
+  margin-bottom: 0.35rem;
+}
+
+.paymentSummaryValue {
+  font-size: 1.5rem;
+  font-weight: 800;
+  margin: 0;
+  line-height: 1.2;
+}
+
+.paymentSummaryHint {
+  display: block;
+  margin-top: 0.4rem;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+.paymentListHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.paymentList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.paymentRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 1rem 1.1rem;
+  background: rgba(0, 0, 0, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  border-radius: var(--r-sm);
+}
+
+.paymentRowMain {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  min-width: 0;
+}
+
+.paymentRowCustomer {
+  font-weight: 600;
+  font-size: 0.95rem;
+  margin: 0;
+}
+
+.paymentRequestLink {
+  border: none;
+  background: none;
+  padding: 0;
+  font: inherit;
+  font-size: 0.78rem;
+  font-family: monospace;
+  color: var(--amber);
+  cursor: pointer;
+  text-align: left;
+}
+
+.paymentRequestLink:hover {
+  text-decoration: underline;
+}
+
+.paymentRowMeta {
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.paymentRowAmount {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--success);
+  margin: 0;
+}
+
+.paymentRowRef {
+  font-size: 0.72rem;
+  font-family: monospace;
+  color: var(--text-muted);
+  margin: 0.2rem 0 0;
+}
+
+.paymentRowTime {
+  font-size: 0.72rem;
+  color: var(--text-secondary);
+  margin: 0.25rem 0 0;
+}
+
+@media (max-width: 1100px) {
+  .paymentSummaryGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .statsGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .paymentSummaryGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .paymentRow {
+    flex-direction: column;
+  }
+
+  .paymentRowMeta {
+    text-align: left;
+  }
 }
 
 /* ── Animations ─────────────────────────────────────────── */

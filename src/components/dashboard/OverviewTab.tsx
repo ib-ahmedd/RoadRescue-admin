@@ -1,22 +1,27 @@
 import { SERVICE_DETAILS } from "@/lib/constants";
+import { formatNaira } from "@/lib/formatCurrency";
 import { formatTimeAgo } from "@/lib/formatTimeAgo";
-import type { DashboardStats, RequestData, RequestFilter } from "@/lib/types";
+import type { DashboardStats, PaymentSummary, RequestData, RequestFilter } from "@/lib/types";
 import styles from "@/app/Dashboard.module.css";
 
 interface OverviewTabProps {
   stats: DashboardStats;
+  paymentSummary: PaymentSummary;
   serviceDistribution: Record<string, number>;
   requests: RequestData[];
   onOpenRequests: (filter: RequestFilter) => void;
   onOpenTechnicians: () => void;
+  onOpenPayments: () => void;
 }
 
 export default function OverviewTab({
   stats,
+  paymentSummary,
   serviceDistribution,
   requests,
   onOpenRequests,
   onOpenTechnicians,
+  onOpenPayments,
 }: OverviewTabProps) {
   return (
     <>
@@ -75,6 +80,20 @@ export default function OverviewTab({
             <p className={styles.statLabel}>Techs Active</p>
             <p className={styles.statValue} style={{ color: "var(--success)" }}>
               {stats.availableDrivers} / {stats.totalDrivers}
+            </p>
+          </div>
+        </button>
+        <button
+          type="button"
+          className={styles.statCard}
+          style={{ borderLeft: "4px solid #a855f7" }}
+          onClick={onOpenPayments}
+        >
+          <span className={styles.statIcon} style={{ background: "rgba(168,85,247,0.08)" }}>💳</span>
+          <div>
+            <p className={styles.statLabel}>Account Balance</p>
+            <p className={styles.statValue} style={{ color: "#c084fc" }}>
+              {formatNaira(paymentSummary.accountBalance)}
             </p>
           </div>
         </button>

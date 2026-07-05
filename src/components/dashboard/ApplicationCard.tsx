@@ -151,20 +151,14 @@ export default function ApplicationCard({
             <div className={styles.appActions}>
               <button
                 type="button"
-                className="btn btn-outline btn-sm"
-                style={{ borderColor: "rgba(239,68,68,0.4)", color: "var(--danger)" }}
+                className="btn btn-outline-danger btn-sm"
                 onClick={() => onReject(app.id)}
               >
                 ✕ Reject
               </button>
               <button
                 type="button"
-                className="btn btn-outline btn-sm"
-                style={{
-                  borderColor: "rgba(34,197,94,0.4)",
-                  color: "var(--success)",
-                  background: "rgba(34,197,94,0.04)",
-                }}
+                className="btn btn-outline-success btn-sm"
                 onClick={() => onApprove(app.id)}
               >
                 ✓ Approve & Register

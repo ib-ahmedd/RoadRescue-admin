@@ -9,7 +9,14 @@ export type RequestStatus =
   | "in-progress"
   | "completed"
   | "disputed";
-export type AdminTab = "overview" | "requests" | "technicians" | "contacts" | "disputes" | "applications";
+export type AdminTab =
+  | "overview"
+  | "requests"
+  | "technicians"
+  | "contacts"
+  | "disputes"
+  | "applications"
+  | "payments";
 export type RequestFilter = "all" | "pending" | "active" | "completed";
 
 export interface Provider {
@@ -104,4 +111,25 @@ export interface DashboardStats {
   completed: number;
   totalDrivers: number;
   availableDrivers: number;
+}
+
+export type PaymentType = "booking_fee" | "quote_payment";
+
+export interface Payment {
+  id: string;
+  requestId: string;
+  customerName: string;
+  type: PaymentType;
+  sourceAmount: number;
+  rate: number;
+  amount: number;
+  reference: string;
+  createdAt: string;
+}
+
+export interface PaymentSummary {
+  accountBalance: number;
+  bookingFeeTotal: number;
+  quotePaymentTotal: number;
+  transactionCount: number;
 }
