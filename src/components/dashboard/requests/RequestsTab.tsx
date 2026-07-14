@@ -40,7 +40,9 @@ export default function RequestsTab({
   clearAutoOpenQuoteReview,
 }: RequestsTabProps) {
   return (
-    <div className={styles.splitLayout}>
+    <div
+      className={`${styles.splitLayout} ${selectedRequestId ? styles.splitShowDetail : ""}`}
+    >
       <RequestListPanel
         filteredRequests={filteredRequests}
         selectedRequestId={selectedRequestId}
@@ -51,15 +53,18 @@ export default function RequestsTab({
         onFilterChange={setRequestFilter}
         stats={stats}
       />
-      <RequestDetailPanel
-        request={activeRequest}
-        providers={providers}
-        onUpdateRequest={handleUpdateRequest}
-        onDispatch={handleDispatch}
-        onQuoteApproval={handleQuoteApproval}
-        autoOpenQuoteReviewRequestId={autoOpenQuoteReviewRequestId}
-        onQuoteReviewAutoOpened={clearAutoOpenQuoteReview}
-      />
+      <div className={styles.detailColumn}>
+        <RequestDetailPanel
+          request={activeRequest}
+          providers={providers}
+          onUpdateRequest={handleUpdateRequest}
+          onDispatch={handleDispatch}
+          onQuoteApproval={handleQuoteApproval}
+          autoOpenQuoteReviewRequestId={autoOpenQuoteReviewRequestId}
+          onQuoteReviewAutoOpened={clearAutoOpenQuoteReview}
+          onBack={() => setSelectedRequestId(null)}
+        />
+      </div>
     </div>
   );
 }

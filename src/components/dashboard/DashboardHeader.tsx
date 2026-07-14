@@ -14,19 +14,47 @@ const TAB_TITLES: Record<AdminTab, string> = {
 
 interface DashboardHeaderProps {
   activeTab: AdminTab;
+  onMenuClick?: () => void;
 }
 
-export default function DashboardHeader({ activeTab }: DashboardHeaderProps) {
+export default function DashboardHeader({ activeTab, onMenuClick }: DashboardHeaderProps) {
   return (
     <header className={styles.header}>
-      <div>
-        <span className="badge badge-amber">RoadRescue Administration</span>
-        <h2 className={styles.pageTitle}>{TAB_TITLES[activeTab]}</h2>
+      <div className={styles.headerLead}>
+        {onMenuClick && (
+          <button
+            type="button"
+            className={styles.menuButton}
+            onClick={onMenuClick}
+            aria-label="Open navigation"
+          >
+            <span />
+            <span />
+            <span />
+          </button>
+        )}
+        <div className={styles.headerTitles}>
+          <span className="badge badge-amber">RoadRescue Administration</span>
+          <h2 className={styles.pageTitle}>{TAB_TITLES[activeTab]}</h2>
+        </div>
       </div>
       <div className={styles.headerActions}>
         <ThemeToggle />
         <div className={styles.dateDisplay}>
-          📅 {new Date().toLocaleDateString(undefined, { weekday: "long", month: "short", day: "numeric" })}
+          📅{" "}
+          <span className={styles.dateFull}>
+            {new Date().toLocaleDateString(undefined, {
+              weekday: "long",
+              month: "short",
+              day: "numeric",
+            })}
+          </span>
+          <span className={styles.dateShort}>
+            {new Date().toLocaleDateString(undefined, {
+              month: "short",
+              day: "numeric",
+            })}
+          </span>
         </div>
       </div>
     </header>

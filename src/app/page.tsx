@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import ApplicationsTab from "@/components/dashboard/ApplicationsTab";
 import PaymentsTab from "@/components/dashboard/PaymentsTab";
 import ContactsTab from "@/components/dashboard/ContactsTab";
@@ -15,6 +16,22 @@ import styles from "./Dashboard.module.css";
 
 export default function AdminDashboard() {
   const dashboard = useAdminDashboard();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  useEffect(() => {
+    if (!sidebarOpen) return;
+
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setSidebarOpen(false);
+    };
+
+    document.body.style.overflow = "hidden";
+    window.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.body.style.overflow = "";
+      window.removeEventListener("keydown", onKeyDown);
+    };
+  }, [sidebarOpen]);
 
   return (
     <div className={styles.layout}>
@@ -23,6 +40,14 @@ export default function AdminDashboard() {
         onDismiss={dashboard.dismissNotification}
         onNavigate={dashboard.handleNotificationNavigate}
       />
+      {sidebarOpen && (
+        <button
+          type="button"
+          className={styles.sidebarOverlay}
+          aria-label="Close navigation"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
       <DashboardSidebar
         activeTab={dashboard.activeTab}
         onTabChange={dashboard.setActiveTab}
@@ -30,10 +55,15 @@ export default function AdminDashboard() {
         contactsCount={dashboard.contacts.length}
         openDisputesCount={dashboard.disputes.filter((d) => d.status === "open").length}
         pendingApplicationsCount={dashboard.applications.filter((a) => a.status === "pending").length}
+        open={sidebarOpen}
+        onClose={() => setSidebarOpen(false)}
       />
 
       <main className={styles.content}>
-        <DashboardHeader activeTab={dashboard.activeTab} />
+        <DashboardHeader
+          activeTab={dashboard.activeTab}
+          onMenuClick={() => setSidebarOpen(true)}
+        />
 
         {dashboard.serverError && (
           <div

@@ -9,6 +9,8 @@ interface DashboardSidebarProps {
   contactsCount: number;
   openDisputesCount: number;
   pendingApplicationsCount: number;
+  open?: boolean;
+  onClose?: () => void;
 }
 
 export default function DashboardSidebar({
@@ -18,29 +20,46 @@ export default function DashboardSidebar({
   contactsCount,
   openDisputesCount,
   pendingApplicationsCount,
+  open = false,
+  onClose,
 }: DashboardSidebarProps) {
+  const handleTabChange = (tab: AdminTab) => {
+    onTabChange(tab);
+    onClose?.();
+  };
+
   return (
-    <aside className={styles.sidebar}>
+    <aside className={`${styles.sidebar} ${open ? styles.sidebarOpen : ""}`}>
       <div className={styles.brand}>
         <span className={styles.logoIcon}>🚨</span>
-        <div>
+        <div className={styles.brandText}>
           <h1 className={styles.brandName}>RoadRescue</h1>
           <span className="badge badge-amber" style={{ fontSize: "0.6rem", padding: "0.15rem 0.4rem" }}>
             Ops Center
           </span>
         </div>
+        {onClose && (
+          <button
+            type="button"
+            className={styles.sidebarClose}
+            onClick={onClose}
+            aria-label="Close navigation"
+          >
+            ✕
+          </button>
+        )}
       </div>
 
       <nav className={styles.nav}>
         <button
           className={`${styles.navItem} ${activeTab === "overview" ? styles.navItemActive : ""}`}
-          onClick={() => onTabChange("overview")}
+          onClick={() => handleTabChange("overview")}
         >
           📊 Overview Dashboard
         </button>
         <button
           className={`${styles.navItem} ${activeTab === "requests" ? styles.navItemActive : ""}`}
-          onClick={() => onTabChange("requests")}
+          onClick={() => handleTabChange("requests")}
         >
           📋 Rescue Requests
           {stats.pending > 0 && (
@@ -51,13 +70,13 @@ export default function DashboardSidebar({
         </button>
         <button
           className={`${styles.navItem} ${activeTab === "technicians" ? styles.navItemActive : ""}`}
-          onClick={() => onTabChange("technicians")}
+          onClick={() => handleTabChange("technicians")}
         >
           👷 Manage Technicians
         </button>
         <button
           className={`${styles.navItem} ${activeTab === "contacts" ? styles.navItemActive : ""}`}
-          onClick={() => onTabChange("contacts")}
+          onClick={() => handleTabChange("contacts")}
         >
           ✉️ Contact Inquiries
           {contactsCount > 0 && (
@@ -68,7 +87,7 @@ export default function DashboardSidebar({
         </button>
         <button
           className={`${styles.navItem} ${activeTab === "disputes" ? styles.navItemActive : ""}`}
-          onClick={() => onTabChange("disputes")}
+          onClick={() => handleTabChange("disputes")}
         >
           ⚠️ Disputes
           {openDisputesCount > 0 && (
@@ -79,7 +98,7 @@ export default function DashboardSidebar({
         </button>
         <button
           className={`${styles.navItem} ${activeTab === "applications" ? styles.navItemActive : ""}`}
-          onClick={() => onTabChange("applications")}
+          onClick={() => handleTabChange("applications")}
         >
           📝 Tech Applications
           {pendingApplicationsCount > 0 && (
@@ -90,7 +109,7 @@ export default function DashboardSidebar({
         </button>
         <button
           className={`${styles.navItem} ${activeTab === "payments" ? styles.navItemActive : ""}`}
-          onClick={() => onTabChange("payments")}
+          onClick={() => handleTabChange("payments")}
         >
           💳 Account Balance
         </button>

@@ -16,6 +16,7 @@ interface RequestDetailPanelProps {
   onQuoteApproval: (id: string, action: "approve" | "reject") => Promise<boolean>;
   autoOpenQuoteReviewRequestId?: string | null;
   onQuoteReviewAutoOpened?: () => void;
+  onBack?: () => void;
 }
 
 const QUOTE_STATUS_LABELS: Record<NonNullable<RequestData["quoteStatus"]>, string> = {
@@ -34,6 +35,7 @@ export default function RequestDetailPanel({
   onQuoteApproval,
   autoOpenQuoteReviewRequestId,
   onQuoteReviewAutoOpened,
+  onBack,
 }: RequestDetailPanelProps) {
   const [showQuoteModal, setShowQuoteModal] = useState(false);
   const [quoteSubmitting, setQuoteSubmitting] = useState(false);
@@ -80,6 +82,11 @@ export default function RequestDetailPanel({
     <>
       <div className={styles.detailsPanel}>
         <div>
+          {onBack && (
+            <button type="button" className={styles.mobileBackBtn} onClick={onBack}>
+              ← Back to requests
+            </button>
+          )}
           <div className={styles.detailHeader}>
             <div>
               <span className="badge badge-amber" style={{ marginBottom: "0.5rem" }}>
