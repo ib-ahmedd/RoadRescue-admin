@@ -6,10 +6,17 @@ interface TechnicianDirectoryTableProps {
   providers: Provider[];
 }
 
+function statusBadgeClass(status: Provider["status"]) {
+  if (status === "Available") return "badge-success";
+  if (status === "Dispatched") return "badge-amber";
+  return "badge-danger";
+}
+
 export default function TechnicianDirectoryTable({ providers }: TechnicianDirectoryTableProps) {
   return (
     <div className={styles.card}>
       <h3 className={styles.cardTitle}>👷 Fleet Directory</h3>
+
       <div className={styles.tableScroll}>
         <table className={styles.techTable}>
           <thead>
@@ -25,19 +32,17 @@ export default function TechnicianDirectoryTable({ providers }: TechnicianDirect
             {providers.map((p) => (
               <tr key={p.id}>
                 <td>
-                  <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+                  <div className={styles.techCellPerson}>
                     <div className={styles.providerAvatar}>{p.avatar}</div>
                     <div>
-                      <strong style={{ display: "block" }}>{p.name}</strong>
-                      <span style={{ fontSize: "0.75rem", color: "var(--text-secondary)" }}>{p.id}</span>
+                      <strong className={styles.techName}>{p.name}</strong>
+                      <span className={styles.techId}>{p.id}</span>
                     </div>
                   </div>
                 </td>
                 <td>
                   <div>{p.vehicle}</div>
-                  <span style={{ fontSize: "0.75rem", color: "var(--text-secondary)", fontFamily: "monospace" }}>
-                    {p.plate}
-                  </span>
+                  <span className={styles.techPlate}>{p.plate}</span>
                 </td>
                 <td>
                   <span className="badge badge-amber" style={{ fontSize: "0.65rem" }}>
@@ -46,23 +51,12 @@ export default function TechnicianDirectoryTable({ providers }: TechnicianDirect
                 </td>
                 <td>
                   <div>★ {p.rating}</div>
-                  <span style={{ fontSize: "0.75rem", color: "var(--text-secondary)" }}>
+                  <span className={styles.techMuted}>
                     {p.reviews} review{p.reviews !== 1 && "s"}
                   </span>
                 </td>
                 <td>
-                  <span
-                    className={`badge ${
-                      p.status === "Available"
-                        ? "badge-success"
-                        : p.status === "Dispatched"
-                          ? "badge-amber"
-                          : p.status === "Engaged"
-                            ? "badge-danger"
-                            : "badge-danger"
-                    }`}
-                    style={{ fontSize: "0.7rem" }}
-                  >
+                  <span className={`badge ${statusBadgeClass(p.status)}`} style={{ fontSize: "0.7rem" }}>
                     {p.status}
                   </span>
                 </td>
@@ -70,6 +64,44 @@ export default function TechnicianDirectoryTable({ providers }: TechnicianDirect
             ))}
           </tbody>
         </table>
+      </div>
+
+      <div className={styles.techCardList}>
+        {providers.map((p) => (
+          <article key={p.id} className={styles.techCard}>
+            <div className={styles.techCardHeader}>
+              <div className={styles.techCellPerson}>
+                <div className={styles.providerAvatar}>{p.avatar}</div>
+                <div>
+                  <strong className={styles.techName}>{p.name}</strong>
+                  <span className={styles.techId}>{p.id}</span>
+                </div>
+              </div>
+              <span className={`badge ${statusBadgeClass(p.status)}`} style={{ fontSize: "0.7rem" }}>
+                {p.status}
+              </span>
+            </div>
+            <dl className={styles.techCardMeta}>
+              <div>
+                <dt>Vehicle</dt>
+                <dd>
+                  {p.vehicle}
+                  <span className={styles.techPlate}>{p.plate}</span>
+                </dd>
+              </div>
+              <div>
+                <dt>Speciality</dt>
+                <dd>{SERVICE_DETAILS[p.speciality] || p.speciality}</dd>
+              </div>
+              <div>
+                <dt>Rating</dt>
+                <dd>
+                  ★ {p.rating} · {p.reviews} review{p.reviews !== 1 && "s"}
+                </dd>
+              </div>
+            </dl>
+          </article>
+        ))}
       </div>
     </div>
   );

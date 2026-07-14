@@ -836,6 +836,7 @@
   display: grid;
   grid-template-columns: 2fr 1fr;
   gap: 1.5rem;
+  align-items: start;
 }
 
 .techTable {
@@ -862,6 +863,72 @@
 
 .techTable tr:hover td {
   background: rgba(255,255,255,0.01);
+}
+
+.techCellPerson {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.techName {
+  display: block;
+}
+
+.techId,
+.techMuted,
+.techPlate {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+
+.techPlate {
+  font-family: monospace;
+  margin-top: 0.15rem;
+}
+
+.techCardList {
+  display: none;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.techCard {
+  background: rgba(0, 0, 0, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  border-radius: var(--r-sm);
+  padding: 1rem;
+}
+
+.techCardHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.85rem;
+}
+
+.techCardMeta {
+  display: grid;
+  gap: 0.65rem;
+  margin: 0;
+}
+
+.techCardMeta dt {
+  font-size: 0.68rem;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 0.15rem;
+}
+
+.techCardMeta dd {
+  margin: 0;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-primary);
 }
 
 .techAddForm {
@@ -1283,6 +1350,10 @@
     grid-template-columns: 1fr;
   }
 
+  .techLayout {
+    gap: 1.25rem;
+  }
+
   .splitLayout {
     grid-template-columns: 1fr;
     height: auto;
@@ -1377,6 +1448,25 @@
 
   .card {
     padding: 1.25rem;
+  }
+
+  .techLayout {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .tableScroll {
+    display: none;
+  }
+
+  .techCardList {
+    display: flex;
+  }
+
+  .techAddForm {
+    padding: 1.15rem;
+    order: -1;
   }
 
   .infoGrid {
